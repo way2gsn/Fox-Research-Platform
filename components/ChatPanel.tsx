@@ -17,7 +17,7 @@ interface Message {
   dbId?: number; // Backend message ID
 }
 
-export function ChatPanel({ projectId, documents }: { projectId: number; documents: Document[] }) {
+export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { projectId: number; documents: Document[]; isExpanded?: boolean; onExpand?: () => void }) {
   // Chat Sessions State
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
@@ -37,7 +37,6 @@ export function ChatPanel({ projectId, documents }: { projectId: number; documen
   const [sending, setSending] = useState(false);
   const [showSources, setShowSources] = useState<string | null>(null);
   const [docsDropdownOpen, setDocsDropdownOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -196,7 +195,7 @@ export function ChatPanel({ projectId, documents }: { projectId: number; documen
   ];
 
   return (
-    <div className={clsx('flex-1 min-h-0 flex gap-5 transition-all duration-300', isExpanded && 'absolute inset-0 z-50 bg-[var(--bg)] p-4 sm:p-8 pt-6 sm:pt-10')}> 
+    <div className="flex-1 min-h-0 flex gap-5">
       {/* Sidebar for Chat Sessions */}
       <div className="w-64 shrink-0 flex flex-col border-r border-[var(--border)] pr-5">
         <Button onClick={startNewChat} className="w-full justify-start mb-4" variant={!activeSessionId ? 'primary' : 'outline'}>
@@ -237,15 +236,17 @@ export function ChatPanel({ projectId, documents }: { projectId: number; documen
       <div className="flex-1 flex flex-col min-w-0">
         {/* Settings bar */}
         <div className="shrink-0 border-b border-[var(--border)] pb-3 mb-4 flex flex-wrap gap-4 items-start">
-          <div className="ml-auto order-last flex items-center justify-end w-full sm:w-auto sm:order-none mb-2 sm:mb-0">
-            <button 
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1.5 rounded-md hover:bg-[var(--surface-2)] text-[var(--text-dim)] hover:text-[var(--text)] transition-colors"
-              title={isExpanded ? "Collapse Chat" : "Expand Chat"}
-            >
-              {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </button>
-          </div>
+          {onExpand && (
+            <div className="ml-auto order-last flex items-center justify-end w-full sm:w-auto sm:order-none mb-2 sm:mb-0">
+              <button 
+                onClick={onExpand}
+                className="p-1.5 rounded-md hover:bg-[var(--surface-2)] text-[var(--text-dim)] hover:text-[var(--text)] transition-colors"
+                title={isExpanded ? "Collapse Chat" : "Expand Chat"}
+              >
+                {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+            </div>
+          )}
           {/* Search type */}
           <div>
             <p className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Mode</p>

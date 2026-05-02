@@ -83,7 +83,7 @@ export function AppShell({ children, breadcrumbs }: {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+        <main className="flex-1 flex flex-col min-h-0 overflow-auto">
           {children}
         </main>
       </div>

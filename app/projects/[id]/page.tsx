@@ -21,6 +21,7 @@ export default function ProjectPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [tab, setTab] = useState<Tab>('documents');
   const [loading, setLoading] = useState(true);
+  const [chatExpanded, setChatExpanded] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -65,6 +66,7 @@ export default function ProjectPage() {
     <AppShell breadcrumbs={[{ label: 'Projects', href: '/' }, { label: project?.name || `Project ${projectId}` }]}>
       <div className="flex flex-col flex-1 h-full w-full min-h-0">
         {/* Project header */}
+        {!chatExpanded && (
         <div className="max-w-6xl mx-auto w-full px-6 pt-6 mb-6">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-2 h-2 rounded-full bg-amber-500" />
@@ -90,8 +92,10 @@ export default function ProjectPage() {
             </div>
           )}
         </div>
+        )}
 
         {/* Tabs */}
+        {!chatExpanded && (
         <div className="max-w-6xl mx-auto w-full px-6">
           <div className="flex gap-1 border-b border-[var(--border)] mb-6">
           {tabs.map(t => (
@@ -114,9 +118,10 @@ export default function ProjectPage() {
           ))}
           </div>
         </div>
+        )}
 
         {/* Tab content */}
-        <div className="flex-1 min-h-0 fade-up flex flex-col pb-6">
+        <div className={clsx("flex-1 min-h-0 fade-up flex flex-col pb-6", chatExpanded && "pt-6")}>
           {tab === 'documents' && (
             <div className="max-w-6xl mx-auto w-full px-6 overflow-auto flex-1">
               <DocumentsPanel projectId={projectId} />
@@ -124,7 +129,12 @@ export default function ProjectPage() {
           )}
           {tab === 'chat' && (
             <div className="flex-1 flex flex-col min-h-0 w-full px-6">
-              <ChatPanel projectId={projectId} documents={documents} />
+              <ChatPanel 
+                projectId={projectId} 
+                documents={documents} 
+                isExpanded={chatExpanded}
+                onExpand={() => setChatExpanded(!chatExpanded)}
+              />
             </div>
           )}
           {tab === 'queryspec' && (
