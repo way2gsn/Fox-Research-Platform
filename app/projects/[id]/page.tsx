@@ -47,7 +47,7 @@ export default function ProjectPage() {
   const tabs: { id: Tab; label: string; icon: React.ReactNode; count?: number }[] = [
     { id: 'documents', label: 'Documents', icon: <FileText size={14} />, count: documents.length },
     { id: 'chat', label: 'Chat', icon: <MessageSquare size={14} /> },
-    { id: 'queryspec', label: 'Query Spec', icon: <TableProperties size={14} /> },
+    // { id: 'queryspec', label: 'Query Spec', icon: <TableProperties size={14} /> },
     { id: 'agent', label: 'Agent Runs', icon: <Bot size={14} /> },
   ];
 
