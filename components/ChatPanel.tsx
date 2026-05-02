@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Send, FileText, ChevronDown, ChevronUp, Zap, Brain, Search, Plus, Trash2, Edit2, MessageSquare, Maximize2, Minimize2 } from 'lucide-react';
+import { Send, FileText, ChevronDown, ChevronUp, Zap, Brain, Search, Plus, Trash2, Edit2, MessageSquare, Maximize2, Minimize2, Menu, X } from 'lucide-react';
 import { api, ChatResponse, Document, ChatSession, ChatMessage } from '@/lib/api';
 import { Button, Spinner, Modal, Input } from '@/components/ui';
 import clsx from 'clsx';
@@ -37,6 +37,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
   const [sending, setSending] = useState(false);
   const [showSources, setShowSources] = useState<string | null>(null);
   const [docsDropdownOpen, setDocsDropdownOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -195,9 +196,56 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
   ];
 
   return (
-    <div className="flex-1 min-h-0 flex gap-5">
-      {/* Sidebar for Chat Sessions */}
-      <div className="w-64 shrink-0 flex flex-col border-r border-[var(--border)] pr-5">
+    <div className="flex-1 min-h-0 flex gap-5 relative">
+      {/* Mobile Sidebar Overlay */}
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-40 flex md:hidden">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileSidebarOpen(false)} />
+          <div className="relative w-64 max-w-[80vw] h-full bg-[var(--surface-1)] border-r border-[var(--border)] p-4 flex flex-col shadow-2xl animate-slide-right">
+            <div className="flex items-center justify-between mb-6">
+              <span className="font-semibold text-[var(--text)]">Chat History</span>
+              <button onClick={() => setMobileSidebarOpen(false)} className="p-1 text-[var(--text-dim)] hover:text-[var(--text)]">
+                <X size={18} />
+              </button>
+            </div>
+            <Button onClick={() => { startNewChat(); setMobileSidebarOpen(false); }} className="w-full justify-start mb-4" variant={!activeSessionId ? 'primary' : 'outline'}>
+              <Plus size={14} className="mr-2" /> New Chat
+            </Button>
+            <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+              {loadingSessions ? (
+                <div className="flex justify-center p-4"><Spinner size={16} /></div>
+              ) : sessions.length === 0 ? (
+                <p className="text-xs text-[var(--text-faint)] text-center py-4">No saved chats</p>
+              ) : (
+                sessions.map(s => (
+                  <div
+                    key={s.id}
+                    className={clsx(
+                      'group flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all',
+                      activeSessionId === s.id
+                        ? 'bg-amber-500/15 text-amber-400'
+                        : 'text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]'
+                    )}
+                    onClick={() => { setActiveSessionId(s.id); setMobileSidebarOpen(false); }}
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <MessageSquare size={13} className="shrink-0" />
+                      <span className="text-sm truncate">{s.title}</span>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={(e) => { e.stopPropagation(); setEditingSession(s); setEditTitle(s.title); }} className="p-1 hover:text-amber-400"><Edit2 size={11} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); setDeletingSession(s); }} className="p-1 hover:text-red-400"><Trash2 size={11} /></button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sidebar for Chat Sessions (Desktop) */}
+      <div className="hidden md:flex w-64 shrink-0 flex-col border-r border-[var(--border)] pr-5">
         <Button onClick={startNewChat} className="w-full justify-start mb-4" variant={!activeSessionId ? 'primary' : 'outline'}>
           <Plus size={14} className="mr-2" /> New Chat
         </Button>
@@ -236,6 +284,13 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
       <div className="flex-1 flex flex-col min-w-0">
         {/* Settings bar */}
         <div className="shrink-0 border-b border-[var(--border)] pb-3 mb-4 flex flex-wrap gap-4 items-start">
+          <button 
+            onClick={() => setMobileSidebarOpen(true)}
+            className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-md bg-[var(--surface-2)] text-[var(--text-dim)] hover:text-[var(--text)] transition-colors"
+          >
+            <Menu size={16} />
+            <span className="text-xs font-medium">History</span>
+          </button>
           {onExpand && (
             <div className="ml-auto order-last flex items-center justify-end w-full sm:w-auto sm:order-none mb-2 sm:mb-0">
               <button 

@@ -67,14 +67,14 @@ export default function ProjectPage() {
       <div className="flex flex-col flex-1 h-full w-full min-h-0">
         {/* Project header */}
         {!chatExpanded && (
-        <div className="max-w-6xl mx-auto w-full px-6 pt-6 mb-6">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-2 h-2 rounded-full bg-amber-500" />
-            <h1 className="text-xl font-bold text-[var(--text)]">{project?.name}</h1>
-            <span className="text-xs font-mono text-[var(--text-faint)] bg-[var(--surface-2)] px-2 py-0.5 rounded">#{projectId}</span>
+        <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-6 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3 mb-1">
+            <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+            <h1 className="text-base sm:text-xl font-bold text-[var(--text)] truncate">{project?.name}</h1>
+            <span className="text-xs font-mono text-[var(--text-faint)] bg-[var(--surface-2)] px-2 py-0.5 rounded shrink-0">#{projectId}</span>
           </div>
           {project?.description && (
-            <div className="text-sm text-[var(--text-dim)] ml-5">
+            <div className="text-sm text-[var(--text-dim)] ml-4 sm:ml-5">
               {(() => {
                 try {
                   const parsed = JSON.parse(project.description);
@@ -96,8 +96,8 @@ export default function ProjectPage() {
 
         {/* Tabs */}
         {!chatExpanded && (
-        <div className="max-w-6xl mx-auto w-full px-6">
-          <div className="flex gap-1 border-b border-[var(--border)] mb-6">
+        <div className="max-w-6xl mx-auto w-full px-4 sm:px-6">
+          <div className="flex gap-1 border-b border-[var(--border)] mb-4 sm:mb-6 overflow-x-auto whitespace-nowrap scrollbar-hide">
           {tabs.map(t => (
             <button
               key={t.id}
@@ -123,12 +123,12 @@ export default function ProjectPage() {
         {/* Tab content */}
         <div className={clsx("flex-1 min-h-0 fade-up flex flex-col pb-6", chatExpanded && "pt-6")}>
           {tab === 'documents' && (
-            <div className="max-w-6xl mx-auto w-full px-6 overflow-auto flex-1">
+            <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 overflow-auto flex-1">
               <DocumentsPanel projectId={projectId} />
             </div>
           )}
           {tab === 'chat' && (
-            <div className="flex-1 flex flex-col min-h-0 w-full px-6">
+            <div className="flex-1 flex flex-col min-h-0 w-full px-0 sm:px-6">
               <ChatPanel 
                 projectId={projectId} 
                 documents={documents} 
@@ -138,12 +138,12 @@ export default function ProjectPage() {
             </div>
           )}
           {tab === 'queryspec' && (
-            <div className="max-w-6xl mx-auto w-full px-6 overflow-auto flex-1">
+            <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 overflow-auto flex-1">
               <QuerySpecPanel projectId={projectId} />
             </div>
           )}
           {tab === 'agent' && (
-            <div className="max-w-6xl mx-auto w-full px-6 overflow-auto flex-1">
+            <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 overflow-auto flex-1">
               <AgentPanel projectId={projectId} documents={documents} />
             </div>
           )}

@@ -123,7 +123,7 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
   return (
     <div>
       {/* Toolbar */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <input
           ref={inputRef}
           type="file"
@@ -167,10 +167,11 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
       ) : docs.length === 0 ? (
         <EmptyState icon={<FileText size={32} />} title="No documents yet" description="Upload files to begin indexing them into your knowledge base." />
       ) : (
-        <div className="rounded-lg overflow-hidden border border-[var(--border)]">
-          {/* Table header */}
-          <div className="grid grid-cols-[24px_1fr_100px_80px_100px] gap-3 px-3 py-2 bg-[var(--surface-2)] text-[10px] uppercase tracking-wider text-[var(--text-faint)] font-medium">
-            <input type="checkbox" checked={selected.size === docs.length && docs.length > 0} onChange={toggleAll} className="w-3.5 h-3.5 accent-amber-500" />
+        <div className="rounded-lg overflow-hidden border border-[var(--border)] overflow-x-auto">
+          <div className="min-w-[500px]">
+            {/* Table header */}
+            <div className="grid grid-cols-[24px_1fr_100px_80px_100px] gap-3 px-3 py-2 bg-[var(--surface-2)] text-[10px] uppercase tracking-wider text-[var(--text-faint)] font-medium">
+              <input type="checkbox" checked={selected.size === docs.length && docs.length > 0} onChange={toggleAll} className="w-3.5 h-3.5 accent-amber-500" />
             <span>File</span>
             <span>Type</span>
             <span>Size</span>
@@ -201,10 +202,11 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
               <StatusBadge status={doc.processing_status || 'unknown'} />
             </div>
           ))}
+          </div>
         </div>
       )}
 
-      {/* Confirm delete all */}
+      {/* Modals */}
       <Modal open={confirmDeleteAll} onClose={() => setConfirmDeleteAll(false)} title="Delete All Documents">
         <p className="text-sm text-[var(--text-dim)] mb-5">
           This will permanently delete all {docs.length} documents from this project. This action cannot be undone.

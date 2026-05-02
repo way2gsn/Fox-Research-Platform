@@ -1,8 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ReactNode } from 'react';
-import { FolderOpen, LayoutGrid, ChevronRight, Hexagon, Sun, Moon, LogOut } from 'lucide-react';
+import { ReactNode, useState } from 'react';
+import { FolderOpen, LayoutGrid, ChevronRight, Hexagon, Sun, Moon, LogOut, Menu, X } from 'lucide-react';
 import clsx from 'clsx';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -13,6 +13,7 @@ export function AppShell({ children, breadcrumbs }: {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -27,7 +28,7 @@ export function AppShell({ children, breadcrumbs }: {
       <div className="ambient-orb orb-2" />
 
       {/* Sidebar */}
-      <aside className="relative z-10 w-14 shrink-0 border-r border-[var(--border)] bg-[var(--surface-1)] flex flex-col items-center py-5 gap-6">
+      <aside className="hidden sm:flex relative z-10 w-14 shrink-0 border-r border-[var(--border)] bg-[var(--surface-1)] flex-col items-center py-5 gap-6">
         {/* Logo mark */}
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_15px_rgba(255,92,0,0.4)]">
           <Hexagon size={18} className="text-black fill-black/20" strokeWidth={2.5} />
@@ -38,11 +39,39 @@ export function AppShell({ children, breadcrumbs }: {
         </nav>
       </aside>
 
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex sm:hidden">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
+          <div className="relative w-64 max-w-[80vw] h-full bg-[var(--surface-1)] border-r border-[var(--border)] p-6 flex flex-col shadow-2xl animate-slide-right">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_15px_rgba(255,92,0,0.4)]">
+                  <Hexagon size={18} className="text-black fill-black/20" strokeWidth={2.5} />
+                </div>
+                <span className="font-bold text-[var(--text)] tracking-tight">ResearchFox</span>
+              </div>
+              <button onClick={() => setMobileMenuOpen(false)} className="p-2 -mr-2 text-[var(--text-dim)] hover:text-[var(--text)]">
+                <X size={20} />
+              </button>
+            </div>
+            <nav className="flex flex-col gap-2">
+              <Link href="/" onClick={() => setMobileMenuOpen(false)} className={clsx('flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors', pathname === '/' ? 'bg-amber-500/15 text-amber-500' : 'text-[var(--text-dim)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]')}>
+                <LayoutGrid size={20} /> Projects
+              </Link>
+            </nav>
+          </div>
+        </div>
+      )}
+
       {/* Main */}
       <div className="relative z-10 flex-1 flex flex-col min-w-0 min-h-0">
         {/* Top bar */}
-        <header className="h-12 border-b border-[var(--border)] bg-[var(--surface-1)] flex items-center px-5 gap-4">
-          <div className="flex items-center gap-3 border-r border-[var(--border)] pr-4">
+        <header className="h-12 shrink-0 border-b border-[var(--border)] bg-[var(--surface-1)] flex items-center px-3 sm:px-5 gap-2 sm:gap-4">
+          <button onClick={() => setMobileMenuOpen(true)} className="sm:hidden p-1.5 text-[var(--text-dim)] hover:text-[var(--text)]">
+            <Menu size={20} />
+          </button>
+          <div className="flex items-center gap-3 border-r-0 sm:border-r border-[var(--border)] pr-2 sm:pr-4">
             {/* Dark Mode Logo (White SVG) */}
             <img src="https://researchfox.com/wp-content/uploads/2021/12/footer-logo.svg" alt="ResearchFox" className="h-4 opacity-90 hidden dark:block" />
             {/* Light Mode Logo (Colored) */}
@@ -59,7 +88,7 @@ export function AppShell({ children, breadcrumbs }: {
               )}
             </span>
           ))}
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2 sm:gap-3">
             <span className="text-[10px] text-[var(--text-faint)] font-mono uppercase tracking-wider hidden sm:block">AI Platform</span>
             <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse-slow shadow-[0_0_8px_rgba(0,229,255,0.6)] hidden sm:block" />
             <div className="h-4 w-px bg-[var(--border)] hidden sm:block" />
@@ -73,11 +102,11 @@ export function AppShell({ children, breadcrumbs }: {
             <div className="h-4 w-px bg-[var(--border)]" />
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-red-500/10 text-[var(--text-dim)] hover:text-red-500 transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-md hover:bg-red-500/10 text-[var(--text-dim)] hover:text-red-500 transition-colors"
               title="Logout"
             >
               <LogOut size={16} />
-              <span className="text-xs font-medium">Logout</span>
+              <span className="text-xs font-medium hidden sm:inline">Logout</span>
             </button>
           </div>
         </header>
