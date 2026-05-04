@@ -23,12 +23,14 @@ export function AppShell({ children, breadcrumbs }: {
   return (
     <div className="flex h-screen w-full relative overflow-hidden">
       {/* Futuristic Backgrounds */}
+      <div className="dot-matrix" />
       <div className="cyber-grid" />
-      <div className="ambient-orb orb-1" />
-      <div className="ambient-orb orb-2" />
 
       {/* Sidebar */}
-      <aside className="hidden sm:flex relative z-10 w-14 shrink-0 border-r border-[var(--border)] bg-[var(--surface-1)] flex-col items-center py-5 gap-6">
+      <aside className="hidden sm:flex relative z-10 w-16 shrink-0 border-r border-[var(--border)] bg-[var(--surface-1)]/80 backdrop-blur-md flex-col items-center py-6 gap-8 overflow-hidden">
+        {/* Geometric Accent Decoration */}
+        <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-transparent via-[var(--amber)]/20 to-transparent" />
+        
         {/* Logo mark */}
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_15px_rgba(255,92,0,0.4)]">
           <Hexagon size={18} className="text-black fill-black/20" strokeWidth={2.5} />
@@ -65,13 +67,13 @@ export function AppShell({ children, breadcrumbs }: {
       )}
 
       {/* Main */}
-      <div className="relative z-10 flex-1 flex flex-col min-w-0 min-h-0">
+      <div className="relative z-10 flex-1 flex flex-col min-w-0 min-h-0 bg-transparent">
         {/* Top bar */}
-        <header className="h-12 shrink-0 border-b border-[var(--border)] bg-[var(--surface-1)] flex items-center px-3 sm:px-5 gap-2 sm:gap-4">
-          <button onClick={() => setMobileMenuOpen(true)} className="sm:hidden p-1.5 text-[var(--text-dim)] hover:text-[var(--text)]">
+        <header className="h-14 shrink-0 border-b border-[var(--border)] bg-[var(--surface-1)]/50 backdrop-blur-lg flex items-center px-4 sm:px-6 gap-3 sm:gap-5">
+          <button onClick={() => setMobileMenuOpen(true)} className="sm:hidden p-2 text-[var(--text-dim)] hover:text-[var(--text)]">
             <Menu size={20} />
           </button>
-          <div className="flex items-center gap-3 border-r-0 sm:border-r border-[var(--border)] pr-2 sm:pr-4">
+          <div className="flex items-center gap-4 border-r-0 sm:border-r border-[var(--border)] pr-3 sm:pr-5">
             {/* Dark Mode Logo (White SVG) */}
             <img src="https://researchfox.com/wp-content/uploads/2021/12/footer-logo.svg" alt="ResearchFox" className="h-4 opacity-90 hidden dark:block" />
             {/* Light Mode Logo (Colored) */}

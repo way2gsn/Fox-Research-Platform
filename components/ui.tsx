@@ -10,14 +10,14 @@ interface BtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 export function Button({ variant = 'primary', size = 'md', loading, children, className, disabled, ...rest }: BtnProps) {
-  const base = 'inline-flex items-center gap-2 font-medium transition-all duration-200 rounded-md cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-500/50';
+  const base = 'inline-flex items-center justify-center gap-2 font-bold transition-all duration-300 rounded-lg cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-500/30 active:scale-[0.95]';
   const variants = {
-    primary: 'bg-amber-500 text-black hover:bg-amber-400 active:scale-[.98] shadow-[0_0_15px_rgba(255,92,0,0.3)] hover:shadow-[0_0_20px_rgba(255,92,0,0.5)]',
+    primary: 'bg-amber-500 text-black hover:bg-amber-400 shadow-[0_4px_20px_rgba(255,92,0,0.3)] hover:shadow-[0_8px_30px_rgba(255,92,0,0.5)] glow-border',
     ghost:   'text-[var(--text-dim)] hover:text-[var(--text)] hover:bg-[var(--surface-2)]',
-    danger:  'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20',
-    outline: 'border border-[var(--border-bright)] text-[var(--text-dim)] hover:border-[var(--amber)] hover:text-[var(--amber)]',
+    danger:  'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/40',
+    outline: 'border border-[var(--border-bright)] text-[var(--text-dim)] hover:border-amber-500/50 hover:text-amber-500 hover:bg-amber-500/10',
   };
-  const sizes = { sm: 'px-3 py-1.5 text-xs', md: 'px-4 py-2 text-sm', lg: 'px-5 py-2.5 text-base' };
+  const sizes = { sm: 'px-3 py-1.5 text-[10px] uppercase tracking-[0.1em]', md: 'px-5 py-2 text-sm', lg: 'px-7 py-3 text-base' };
   return (
     <button className={clsx(base, variants[variant], sizes[size], className)} disabled={disabled || loading} {...rest}>
       {loading && <Spinner size={14} />}
@@ -53,10 +53,14 @@ export function StatusBadge({ status }: { status: string }) {
 // ─── Spinner ──────────────────────────────────────────────────────────────────
 export function Spinner({ size = 20 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="animate-spin">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.2" />
-      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-    </svg>
+    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="animate-spin text-current opacity-20">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+      </svg>
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="animate-spin absolute inset-0 text-current" style={{ animationDuration: '0.8s' }}>
+        <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    </div>
   );
 }
 
@@ -87,10 +91,10 @@ export function Modal({ open, onClose, title, children, wide }: {
 export function Input({ label, className, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-xs text-[var(--text-dim)] font-medium uppercase tracking-wider">{label}</label>}
+      {label && <label className="text-[10px] text-[var(--text-faint)] font-bold uppercase tracking-[0.1em] ml-1">{label}</label>}
       <input
         className={clsx(
-          'bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm placeholder:text-[var(--text-faint)] focus:outline-none focus:border-amber-500/60 transition-colors',
+          'premium-input px-4 py-2.5 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus:outline-none transition-all',
           className
         )}
         {...props}
@@ -102,10 +106,10 @@ export function Input({ label, className, ...props }: React.InputHTMLAttributes<
 export function Textarea({ label, className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-xs text-[var(--text-dim)] font-medium uppercase tracking-wider">{label}</label>}
+      {label && <label className="text-[10px] text-[var(--text-faint)] font-bold uppercase tracking-[0.1em] ml-1">{label}</label>}
       <textarea
         className={clsx(
-          'bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm placeholder:text-[var(--text-faint)] focus:outline-none focus:border-amber-500/60 transition-colors resize-none',
+          'premium-input px-4 py-2.5 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus:outline-none transition-all resize-none',
           className
         )}
         {...props}
@@ -117,7 +121,7 @@ export function Textarea({ label, className, ...props }: React.TextareaHTMLAttri
 // ─── Card ──────────────────────────────────────────────────────────────────────
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={clsx('bg-[var(--surface-1)] border border-[var(--border)] rounded-xl p-5', className)}>
+    <div className={clsx('glass-card p-6 modular-corner glow-border', className)}>
       {children}
     </div>
   );

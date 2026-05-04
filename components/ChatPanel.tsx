@@ -41,6 +41,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const skipLoadRef = useRef(false);
 
   const readyDocs = documents.filter(d => ['completed','ingested','processed'].includes(d.processing_status?.toLowerCase()));
 
@@ -61,6 +62,11 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
 
   // Load Messages when activeSessionId changes
   useEffect(() => {
+    if (skipLoadRef.current) {
+      skipLoadRef.current = false;
+      return;
+    }
+
     async function loadMessages() {
       if (!activeSessionId) {
         setMessages([]);
@@ -117,6 +123,9 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
         const title = q.length > 30 ? q.slice(0, 30) + '...' : q;
         const res = await api.chatSessions.create(projectId, title);
         currentSessionId = res.chat_session.id;
+        
+        // Signal the useEffect to skip the next load to prevent state wipe
+        skipLoadRef.current = true;
         setActiveSessionId(currentSessionId);
         setSessions(prev => [res.chat_session, ...prev]);
       }
@@ -476,7 +485,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
         </div>
 
         {/* Input */}
-        <div className="shrink-0 mt-4 relative">
+        <div className="shrink-0 mt-6 relative premium-input p-1 focus-within:shadow-lg transition-all">
           <textarea
             ref={inputRef}
             value={input}
@@ -484,7 +493,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder="Ask a question… (Enter to send, Shift+Enter for new line)"
             rows={2}
-            className="w-full bg-[var(--surface-2)] border border-[var(--border)] rounded-xl px-4 py-3 pr-14 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus:outline-none focus:border-amber-500/50 resize-none transition-colors"
+            className="w-full bg-transparent border-none px-4 py-3 pr-14 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus:outline-none resize-none"
           />
           <button
             onClick={send}
