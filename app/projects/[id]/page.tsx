@@ -112,7 +112,7 @@ export default function ProjectPage() {
               {t.icon}
               {t.label}
               {t.count !== undefined && (
-                <span className="text-[10px] bg-[var(--surface-3)] px-1.5 py-0.5 rounded font-mono">{t.count}</span>
+                <span className="text-[11px] bg-[var(--surface-3)] px-1.5 py-0.5 rounded font-mono">{t.count}</span>
               )}
             </button>
           ))}
@@ -122,31 +122,32 @@ export default function ProjectPage() {
 
         {/* Tab content */}
         <div className={clsx("flex-1 min-h-0 fade-up flex flex-col pb-6", chatExpanded && "pt-6")}>
-          {tab === 'documents' && (
+          <div className={clsx("flex-1 flex flex-col min-h-0", tab !== 'documents' && "hidden")}>
             <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 overflow-auto flex-1">
               <DocumentsPanel projectId={projectId} />
             </div>
-          )}
-          {tab === 'chat' && (
-            <div className="flex-1 flex flex-col min-h-0 w-full px-0 sm:px-6">
-              <ChatPanel 
-                projectId={projectId} 
-                documents={documents} 
-                isExpanded={chatExpanded}
-                onExpand={() => setChatExpanded(!chatExpanded)}
-              />
-            </div>
-          )}
-          {tab === 'queryspec' && (
+          </div>
+
+          <div className={clsx("flex-1 flex flex-col min-h-0 w-full px-0 sm:px-6", tab !== 'chat' && "hidden")}>
+            <ChatPanel 
+              projectId={projectId} 
+              documents={documents} 
+              isExpanded={chatExpanded}
+              onExpand={() => setChatExpanded(!chatExpanded)}
+            />
+          </div>
+
+          <div className={clsx("flex-1 flex flex-col min-h-0", tab !== 'queryspec' && "hidden")}>
             <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 overflow-auto flex-1">
               <QuerySpecPanel projectId={projectId} />
             </div>
-          )}
-          {tab === 'agent' && (
+          </div>
+
+          <div className={clsx("flex-1 flex flex-col min-h-0", tab !== 'agent' && "hidden")}>
             <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 overflow-auto flex-1">
               <AgentPanel projectId={projectId} documents={documents} />
             </div>
-          )}
+          </div>
         </div>
       </div>
     </AppShell>

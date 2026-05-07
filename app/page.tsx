@@ -104,7 +104,7 @@ export default function HomePage() {
             { label: 'Backend', value: <span className="text-emerald-400 font-mono text-xs">● Online</span> },
           ].map((s, i) => (
             <div key={i} className="bg-[var(--surface-1)] border border-[var(--border)] rounded-lg px-4 py-3">
-              <p className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] mb-1">{s.label}</p>
+              <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1">{s.label}</p>
               <p className="text-xl font-bold text-[var(--text)] font-mono">{s.value}</p>
             </div>
           ))}
@@ -213,8 +213,8 @@ function ProjectCard({ project, onEdit, onDelete }: { project: Project; onEdit: 
 
         <div className="flex items-center gap-1 mt-4 pt-3 border-t border-[var(--border)]">
           <Calendar size={11} className="text-[var(--text-faint)]" />
-          <span className="text-[10px] text-[var(--text-faint)] font-mono">{date}</span>
-          <span className="ml-auto text-[10px] text-[var(--text-faint)] font-mono">#{project.id}</span>
+          <span className="text-[11px] text-[var(--text-faint)] font-mono">{date}</span>
+          <span className="ml-auto text-[11px] text-[var(--text-faint)] font-mono">#{project.id}</span>
         </div>
       </div>
     </div>

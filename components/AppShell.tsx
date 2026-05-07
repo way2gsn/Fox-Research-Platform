@@ -91,7 +91,7 @@ export function AppShell({ children, breadcrumbs }: {
             </span>
           ))}
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
-            <span className="text-[10px] text-[var(--text-faint)] font-mono uppercase tracking-wider hidden sm:block">AI Platform</span>
+            <span className="text-[11px] text-[var(--text-faint)] font-mono uppercase tracking-wider hidden sm:block">AI Platform</span>
             <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse-slow shadow-[0_0_8px_rgba(0,229,255,0.6)] hidden sm:block" />
             <div className="h-4 w-px bg-[var(--border)] hidden sm:block" />
             <button 

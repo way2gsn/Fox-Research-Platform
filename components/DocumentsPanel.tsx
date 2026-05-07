@@ -170,7 +170,7 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
         <div className="rounded-lg overflow-hidden border border-[var(--border)] overflow-x-auto">
           <div className="min-w-[500px]">
             {/* Table header */}
-            <div className="grid grid-cols-[24px_1fr_100px_80px_100px] gap-3 px-3 py-2 bg-[var(--surface-2)] text-[10px] uppercase tracking-wider text-[var(--text-faint)] font-medium">
+            <div className="grid grid-cols-[24px_1fr_100px_80px_100px] gap-3 px-3 py-2 bg-[var(--surface-2)] text-[11px] uppercase tracking-wider text-[var(--text-faint)] font-medium">
               <input type="checkbox" checked={selected.size === docs.length && docs.length > 0} onChange={toggleAll} className="w-3.5 h-3.5 accent-amber-500" />
             <span>File</span>
             <span>Type</span>
@@ -197,8 +197,8 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
                 {statusIcon(doc.processing_status)}
                 <span className="truncate text-xs text-[var(--text)]">{doc.original_file_name || doc.file_name}</span>
               </div>
-              <span className="text-[10px] font-mono text-[var(--text-faint)] truncate">{doc.file_type?.split('/')[1] || '—'}</span>
-              <span className="text-[10px] font-mono text-[var(--text-faint)]">{formatSize(doc.file_size)}</span>
+              <span className="text-[11px] font-mono text-[var(--text-faint)] truncate">{doc.file_type?.split('/')[1] || '—'}</span>
+              <span className="text-[11px] font-mono text-[var(--text-faint)]">{formatSize(doc.file_size)}</span>
               <StatusBadge status={doc.processing_status || 'unknown'} />
             </div>
           ))}

@@ -275,7 +275,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                 )}
               >
                 <div className={clsx(
-                  'w-5 h-5 rounded-full flex items-center justify-center text-[10px]',
+                  'w-5 h-5 rounded-full flex items-center justify-center text-[11px]',
                   isCurrent ? 'bg-amber-500 text-black' :
                   isCompleted ? 'bg-[var(--text-faint)] text-[var(--surface-1)]' :
                   'bg-[var(--surface-3)] text-[var(--text-dim)]'
@@ -306,11 +306,11 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-lg p-5">
-                  <p className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] mb-1">Project ID</p>
+                  <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1">Project ID</p>
                   <p className="text-sm font-medium text-[var(--text)]">{projectId}</p>
                 </div>
                 <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-lg p-5">
-                  <p className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] mb-1">Project Description</p>
+                  <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1">Project Description</p>
                   <p className="text-sm text-[var(--text-dim)] italic">No structured description provided.</p>
                 </div>
               </div>
@@ -383,10 +383,10 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
 
                   <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-lg p-5">
                     <div className="flex justify-between items-center mb-3">
-                      <label className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] font-medium flex items-center gap-2">
+                      <label className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] font-medium flex items-center gap-2">
                         <FileText size={14} /> Available Documents
                       </label>
-                      <span className="text-[10px] text-[var(--text-faint)] bg-[var(--surface-3)] px-2 py-0.5 rounded">
+                      <span className="text-[11px] text-[var(--text-faint)] bg-[var(--surface-3)] px-2 py-0.5 rounded">
                         {selectedDocs.size === 0 ? 'All Selected' : `${selectedDocs.size} Selected`}
                       </span>
                     </div>
@@ -448,7 +448,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                   {selectedSpec && (
                     <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-lg overflow-hidden">
                       <div className="bg-[var(--surface-3)] px-4 py-2 border-b border-[var(--border)]">
-                        <span className="text-[10px] uppercase text-[var(--text-faint)] font-medium">Selected execution sheet summary</span>
+                        <span className="text-[11px] uppercase text-[var(--text-faint)] font-medium">Selected execution sheet summary</span>
                       </div>
                       
                       <div className="p-4 bg-emerald-500/5 text-emerald-400 text-sm border-b border-[var(--border)] flex items-center gap-2">
@@ -456,7 +456,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                       </div>
                       
                       <table className="w-full text-left text-sm">
-                        <thead className="bg-[var(--surface-2)] text-[10px] uppercase text-[var(--text-faint)] border-b border-[var(--border)]">
+                        <thead className="bg-[var(--surface-2)] text-[11px] uppercase text-[var(--text-faint)] border-b border-[var(--border)]">
                           <tr>
                             <th className="px-4 py-2 font-medium">Metric</th>
                             <th className="px-4 py-2 font-medium text-right">Value</th>
@@ -535,12 +535,12 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                 <div className="space-y-5">
                   <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-lg p-5 space-y-4">
                     <div>
-                      <p className="text-[10px] uppercase text-[var(--text-faint)] mb-1 font-medium">Project Scope</p>
+                      <p className="text-[11px] uppercase text-[var(--text-faint)] mb-1 font-medium">Project Scope</p>
                       <p className="text-sm text-[var(--text-dim)]">ID: {projectId} — No headers or structured description found.</p>
                     </div>
 
                     <div>
-                      <p className="text-[10px] uppercase text-[var(--text-faint)] mb-2 font-medium flex items-center justify-between">
+                      <p className="text-[11px] uppercase text-[var(--text-faint)] mb-2 font-medium flex items-center justify-between">
                         Execution Sheet Validation
                       </p>
                       {selectedSpec ? (
@@ -564,16 +564,16 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                 <div className="space-y-5">
                   <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-lg p-5 space-y-4">
                     <div>
-                      <p className="text-[10px] uppercase text-[var(--text-faint)] mb-1 font-medium">Run Name</p>
+                      <p className="text-[11px] uppercase text-[var(--text-faint)] mb-1 font-medium">Run Name</p>
                       <p className="text-sm text-[var(--text)]">{runName || <span className="text-[var(--text-faint)] italic">Unnamed run</span>}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-[10px] uppercase text-[var(--text-faint)] mb-1 font-medium">Documents Target</p>
+                        <p className="text-[11px] uppercase text-[var(--text-faint)] mb-1 font-medium">Documents Target</p>
                         <p className="text-sm text-[var(--text)]">{selectedDocs.size === 0 ? `All (${readyDocs.length})` : selectedDocs.size}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase text-[var(--text-faint)] mb-1 font-medium">Execution Type</p>
+                        <p className="text-[11px] uppercase text-[var(--text-faint)] mb-1 font-medium">Execution Type</p>
                         <p className="text-sm text-[var(--text)]">Matrix Run</p>
                       </div>
                     </div>
@@ -681,11 +681,11 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
               {completedRun && completedRun.status === 'completed' && (
                 <div className="w-full max-w-md bg-[var(--surface-2)] border border-[var(--border)] rounded-lg p-5 text-left grid grid-cols-2 gap-4">
                    <div>
-                    <p className="text-[10px] uppercase text-[var(--text-faint)] mb-1 font-semibold">Duration</p>
+                    <p className="text-[11px] uppercase text-[var(--text-faint)] mb-1 font-semibold">Duration</p>
                     <p className="text-sm text-[var(--text)] font-medium">{fmtDur(completedRun.duration_seconds)}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase text-[var(--text-faint)] mb-1 font-semibold">Docs Processed</p>
+                    <p className="text-[11px] uppercase text-[var(--text-faint)] mb-1 font-semibold">Docs Processed</p>
                     <p className="text-sm text-[var(--text)] font-medium">{completedRun.document_count}</p>
                   </div>
                 </div>
@@ -730,7 +730,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                 <option value="">-- Select Column --</option>
                 {columns.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              <p className="text-[10px] text-[var(--text-faint)]">The main query or requirement</p>
+              <p className="text-[11px] text-[var(--text-faint)]">The main query or requirement</p>
             </div>
             
             <div className="space-y-2">
@@ -739,7 +739,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                 <option value="">-- Select Column --</option>
                 {columns.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              <p className="text-[10px] text-[var(--text-faint)]">Additional detail or nuance</p>
+              <p className="text-[11px] text-[var(--text-faint)]">Additional detail or nuance</p>
             </div>
 
             <div className="space-y-2">
@@ -748,7 +748,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                 <option value="">-- Select Column --</option>
                 {columns.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              <p className="text-[10px] text-[var(--text-faint)]">Used for grouping questions</p>
+              <p className="text-[11px] text-[var(--text-faint)]">Used for grouping questions</p>
             </div>
           </div>
 
@@ -757,7 +757,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
               Data Preview (First 3 rows)
             </div>
             <table className="w-full text-left text-sm">
-              <thead className="bg-[var(--surface-1)] border-b border-[var(--border)] text-[var(--text-faint)] text-[10px] uppercase">
+              <thead className="bg-[var(--surface-1)] border-b border-[var(--border)] text-[var(--text-faint)] text-[11px] uppercase">
                 <tr>
                   {columns.map(c => (
                     <th key={c} className={clsx("px-4 py-2 font-medium truncate max-w-[150px]", 

@@ -17,7 +17,7 @@ export function Button({ variant = 'primary', size = 'md', loading, children, cl
     danger:  'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/40',
     outline: 'border border-[var(--border-bright)] text-[var(--text-dim)] hover:border-amber-500/50 hover:text-amber-500 hover:bg-amber-500/10',
   };
-  const sizes = { sm: 'px-3 py-1.5 text-[10px] uppercase tracking-[0.1em]', md: 'px-5 py-2 text-sm', lg: 'px-7 py-3 text-base' };
+  const sizes = { sm: 'px-3 py-1.5 text-[11px] uppercase tracking-[0.1em]', md: 'px-5 py-2 text-sm', lg: 'px-7 py-3 text-base' };
   return (
     <button className={clsx(base, variants[variant], sizes[size], className)} disabled={disabled || loading} {...rest}>
       {loading && <Spinner size={14} />}
@@ -91,7 +91,7 @@ export function Modal({ open, onClose, title, children, wide }: {
 export function Input({ label, className, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-[10px] text-[var(--text-faint)] font-bold uppercase tracking-[0.1em] ml-1">{label}</label>}
+      {label && <label className="text-[11px] text-[var(--text-faint)] font-bold uppercase tracking-[0.1em] ml-1">{label}</label>}
       <input
         className={clsx(
           'premium-input px-4 py-2.5 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus:outline-none transition-all',
@@ -106,7 +106,7 @@ export function Input({ label, className, ...props }: React.InputHTMLAttributes<
 export function Textarea({ label, className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-[10px] text-[var(--text-faint)] font-bold uppercase tracking-[0.1em] ml-1">{label}</label>}
+      {label && <label className="text-[11px] text-[var(--text-faint)] font-bold uppercase tracking-[0.1em] ml-1">{label}</label>}
       <textarea
         className={clsx(
           'premium-input px-4 py-2.5 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus:outline-none transition-all resize-none',

@@ -99,7 +99,7 @@ export default function RunDetailPage() {
               <h1 className="text-lg font-bold text-[var(--text)]">{run.run_name || `Run #${rid}`}</h1>
               <StatusBadge status={run.status} />
             </div>
-            <div className="flex gap-4 text-[10px] text-[var(--text-faint)] font-mono flex-wrap">
+            <div className="flex gap-4 text-[11px] text-[var(--text-faint)] font-mono flex-wrap">
               <span>{run.document_count} documents</span>
               <span>{run.subquestion_count} subquestions</span>
               <span>{run.cell_count} cells</span>
@@ -117,11 +117,11 @@ export default function RunDetailPage() {
           <table className="w-full text-xs border-collapse" style={{ minWidth: `${200 + docIds.length * 140}px` }}>
             <thead>
               <tr>
-                <th className="sticky left-0 bg-[var(--surface-2)] border-b border-r border-[var(--border)] px-4 py-3 text-left text-[10px] uppercase tracking-wider text-[var(--text-faint)] font-medium z-10 min-w-[200px]">
+                <th className="sticky left-0 bg-[var(--surface-2)] border-b border-r border-[var(--border)] px-4 py-3 text-left text-[11px] uppercase tracking-wider text-[var(--text-faint)] font-medium z-10 min-w-[200px]">
                   Sub-question
                 </th>
                 {docIds.map(docId => (
-                  <th key={docId} className="bg-[var(--surface-2)] border-b border-r border-[var(--border)] px-3 py-3 text-center text-[10px] text-[var(--text-dim)] font-mono min-w-[140px]">
+                  <th key={docId} className="bg-[var(--surface-2)] border-b border-r border-[var(--border)] px-3 py-3 text-center text-[11px] text-[var(--text-dim)] font-mono min-w-[140px]">
                     Doc #{docId}
                   </th>
                 ))}
@@ -138,7 +138,7 @@ export default function RunDetailPage() {
                       <tr key={`hdr-${row.header}`}>
                         <td
                           colSpan={docIds.length + 1}
-                          className="bg-[var(--surface-2)] border-b border-[var(--border)] px-4 py-2 text-[10px] uppercase tracking-widest text-amber-400 font-semibold"
+                          className="bg-[var(--surface-2)] border-b border-[var(--border)] px-4 py-2 text-[11px] uppercase tracking-widest text-amber-400 font-semibold"
                         >
                           {row.header}
                         </td>
@@ -168,11 +168,11 @@ export default function RunDetailPage() {
                               <div className="flex flex-col items-center gap-1.5">
                                 <div className="flex justify-center">{strengthDot(cell.evidence_strength)}</div>
                                 {cell.summary && (
-                                  <p className="text-[10px] text-[var(--text-faint)] line-clamp-2 leading-relaxed text-left">{cell.summary}</p>
+                                  <p className="text-[11px] text-[var(--text-faint)] line-clamp-2 leading-relaxed text-left">{cell.summary}</p>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-[var(--text-faint)] text-[10px]">—</span>
+                              <span className="text-[var(--text-faint)] text-[11px]">—</span>
                             )}
                           </td>
                         );
@@ -186,7 +186,7 @@ export default function RunDetailPage() {
         </div>
 
         {/* Legend */}
-        <div className="flex gap-4 mt-3 text-[10px] text-[var(--text-faint)]">
+        <div className="flex gap-4 mt-3 text-[11px] text-[var(--text-faint)]">
           {[['strong','bg-emerald-500'], ['moderate','bg-amber-500'], ['weak','bg-orange-500']].map(([label, color]) => (
             <span key={label} className="flex items-center gap-1.5">
               <span className={clsx('w-2 h-2 rounded-full', color)} /> {label}
@@ -209,21 +209,21 @@ export default function RunDetailPage() {
 
             {activeCell.summary && (
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Summary</p>
+                <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Summary</p>
                 <p className="text-sm text-[var(--text)] leading-relaxed">{activeCell.summary}</p>
               </div>
             )}
 
             {activeCell.inference && (
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Inference</p>
+                <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Inference</p>
                 <p className="text-sm text-[var(--text-dim)] leading-relaxed">{activeCell.inference}</p>
               </div>
             )}
 
             {activeCell.verbatims?.length > 0 && (
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Verbatims ({activeCell.verbatims.length})</p>
+                <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Verbatims ({activeCell.verbatims.length})</p>
                 <div className="space-y-2 max-h-52 overflow-y-auto">
                   {activeCell.verbatims.map((v: any, i) => (
                     <div key={i} className="source-card text-[var(--text-dim)] italic">

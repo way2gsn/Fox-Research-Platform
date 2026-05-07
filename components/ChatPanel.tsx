@@ -145,23 +145,31 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
         search_type: searchType,
         llm_model: llmModel,
         document_ids: selectedDocs.size > 0 ? Array.from(selectedDocs) : undefined,
-        history: messages.filter(m => !m.loading).map(m => ({ type: m.role, role: m.role, content: m.content })),
+        history: messages.filter(m => !m.loading).map(m => ({ 
+          role: m.role === 'assistant' ? 'assistant' : 'user',
+          content: m.content 
+        })),
       });
 
-      // 4. Update UI
+      // 4. Update UI with answer
       setMessages(prev => prev.map(m =>
         m.id === aiMsg.id ? { ...m, content: res.answer, meta: res, loading: false } : m
       ));
 
-      // 5. Save AI Message
-      await api.chatSessions.saveMessage(currentSessionId, {
-        type: 'assistant',
-        content: res.answer,
-        search_type: searchType,
-        document_ids: selectedDocs.size > 0 ? Array.from(selectedDocs) : undefined,
-        timestamp: new Date().toISOString(),
-        sources: res.sources || [] // API takes sources inside message for saving
-      });
+      // 5. Save AI Message (Separated to avoid wiping UI on save failure)
+      try {
+        await api.chatSessions.saveMessage(currentSessionId, {
+          type: 'assistant',
+          content: res.answer,
+          search_type: searchType,
+          document_ids: selectedDocs.size > 0 ? Array.from(selectedDocs) : undefined,
+          timestamp: new Date().toISOString(),
+          sources: res.sources || []
+        });
+      } catch (saveErr: any) {
+        console.error("Failed to save AI response:", saveErr);
+        // We don't throw here so the user can still see the answer they just got
+      }
 
     } catch (e: any) {
       setMessages(prev => prev.map(m =>
@@ -313,7 +321,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
           )}
           {/* Search type */}
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Mode</p>
+            <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Mode</p>
             <div className="flex gap-1">
               {searchModes.map(m => (
                 <button
@@ -334,7 +342,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
 
           {/* LLM Model */}
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Model</p>
+            <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Model</p>
             <select
               value={llmModel}
               onChange={e => setLlmModel(e.target.value)}
@@ -349,7 +357,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
           {/* Doc filter */}
           {readyDocs.length > 0 && (
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">
+              <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">
                 Filter documents ({selectedDocs.size > 0 ? `${selectedDocs.size} selected` : 'all'})
               </p>
               <div className="relative">
@@ -369,6 +377,24 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setDocsDropdownOpen(false)} />
                     <div className="absolute z-20 mt-1 w-64 bg-[var(--surface-1)] border border-[var(--border-bright)] rounded-md shadow-xl max-h-60 overflow-y-auto flex flex-col py-1">
+                      {/* Select All Toggle */}
+                      <label className="flex items-center gap-2 px-3 py-2 border-b border-[var(--border)] hover:bg-[var(--surface-2)] cursor-pointer text-xs text-[var(--text)] font-semibold transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={readyDocs.length > 0 && selectedDocs.size === readyDocs.length}
+                          onChange={() => {
+                            if (selectedDocs.size === readyDocs.length) {
+                              setSelectedDocs(new Set());
+                            } else {
+                              setSelectedDocs(new Set(readyDocs.map(d => d.id)));
+                            }
+                          }}
+                          className="accent-amber-500"
+                        />
+                        <span>Select All</span>
+                        <span className="ml-auto text-[var(--text-faint)] font-normal">{readyDocs.length}</span>
+                      </label>
+
                       {readyDocs.map(d => (
                         <label
                           key={d.id}
@@ -439,7 +465,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
                     <p className="text-[var(--text)] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
 
                     {msg.meta && msg.role === 'assistant' && (
-                      <div className="mt-3 pt-3 border-t border-[var(--border)] flex flex-wrap gap-3 text-[10px] text-[var(--text-faint)]">
+                      <div className="mt-3 pt-3 border-t border-[var(--border)] flex flex-wrap gap-3 text-[11px] text-[var(--text-faint)]">
                         {msg.meta.level_intent && (
                           <span className="font-mono bg-[var(--surface-3)] px-2 py-0.5 rounded">{msg.meta.level_intent}</span>
                         )}

@@ -206,7 +206,7 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
                     <Badge className="bg-amber-500/15 text-amber-400">latest</Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-[var(--text-faint)] font-mono">
+                <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-[var(--text-faint)] font-mono">
                   <Clock size={9} />
                   <span>{fmtDate(spec.created_at)}</span>
                   <span className="ml-2">· id #{spec.id}</span>
@@ -251,7 +251,7 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
               { label: 'Subheader Column', value: subheaderCol, setter: setSubheaderCol, required: false },
             ].map(({ label, value, setter, required }) => (
               <div key={label} className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-wider text-[var(--text-dim)] font-medium">
+                <label className="text-[11px] uppercase tracking-wider text-[var(--text-dim)] font-medium">
                   {label}
                 </label>
                 <select
@@ -271,7 +271,7 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
           {/* Preview table */}
           {parsedRows.length > 0 && (
             <div className="overflow-auto max-h-48 rounded-lg border border-[var(--border)]">
-              <table className="w-full text-[10px]">
+              <table className="w-full text-[11px]">
                 <thead>
                   <tr className="bg-[var(--surface-2)] sticky top-0">
                     {columns.map(c => (
