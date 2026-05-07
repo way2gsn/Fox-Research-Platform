@@ -195,3 +195,9 @@ h1, h2, h3, h4, .font-premium {
   background: var(--surface-1);
   box-shadow: 0 8px 30px -8px rgba(255,92,0,0.15);
 }
+
+.premium-input-lg {
+  font-size: 1.1rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 18px;
+}

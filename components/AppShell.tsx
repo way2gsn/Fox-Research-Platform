@@ -23,8 +23,28 @@ export function AppShell({ children, breadcrumbs }: {
   return (
     <div className="flex h-screen w-full relative overflow-hidden">
       {/* Futuristic Backgrounds */}
+      <style jsx global>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-float-delayed { animation: float 6s ease-in-out infinite; animation-delay: 2s; }
+      `}</style>
       <div className="dot-matrix" />
       <div className="cyber-grid" />
+      
+      {/* Decorative Floating Elements */}
+      <div className="absolute top-[10%] left-[5%] w-64 h-64 bg-amber-500/5 rounded-full blur-[100px] animate-float pointer-events-none" />
+      <div className="absolute bottom-[10%] right-[5%] w-96 h-96 bg-cyan-500/5 rounded-full blur-[120px] animate-float-delayed pointer-events-none" />
+
 
       {/* Sidebar */}
       <aside className="hidden sm:flex relative z-10 w-16 shrink-0 border-r border-[var(--border)] bg-[var(--surface-1)]/80 backdrop-blur-md flex-col items-center py-6 gap-8 overflow-hidden">

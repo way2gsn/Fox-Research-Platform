@@ -1,8 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { Plus, Folder, Trash2, Pencil, FileText, Calendar } from 'lucide-react';
-import { api, Project } from '@/lib/api';
+import clsx from 'clsx';
+import { Plus, Folder, Trash2, Pencil, FileText, Calendar, LayoutGrid, Search, Brain, Zap, Activity } from 'lucide-react';
+import { api, Project, AgentRun } from '@/lib/api';
 import { AppShell } from '@/components/AppShell';
 import { Button, Modal, Input, Textarea, StatusBadge, EmptyState, Toast, Spinner } from '@/components/ui';
 
@@ -10,6 +11,12 @@ export default function HomePage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ msg: string; type: 'success'|'error' } | null>(null);
+  const [search, setSearch] = useState('');
+  const [totalRuns, setTotalRuns] = useState<number>(0);
+  const [runningAgents, setRunningAgents] = useState<AgentRun[]>([]);
+  const [platformOnline, setPlatformOnline] = useState(false);
+  const [showRunningModal, setShowRunningModal] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   // Create modal
   const [creating, setCreating] = useState(false);
@@ -30,6 +37,27 @@ export default function HomePage() {
     try {
       const data = await api.projects.list();
       setProjects(data);
+      
+      // Fetch health
+      api.health().then(h => setPlatformOnline(h.status?.includes('running'))).catch(() => setPlatformOnline(false));
+
+      // Fetch runs for all projects to get total count and running agents
+      let runsCount = 0;
+      const allRunning: AgentRun[] = [];
+      const runPromises = data.map(p => api.agent.listRuns(p.id).catch(() => ({ runs: [] })));
+      const runsData = await Promise.all(runPromises);
+      runsData.forEach((rd, i) => {
+        const projectRuns = rd.runs || [];
+        runsCount += projectRuns.length;
+        // Check for running states
+        const running = projectRuns.filter(r => ['running', 'pending', 'queued'].includes(r.status.toLowerCase()));
+        // Add project context to the run for the modal
+        running.forEach(r => (r as any).projectId = data[i].id);
+        allRunning.push(...running);
+      });
+      setTotalRuns(runsCount);
+      setRunningAgents(allRunning);
+
     } catch (e: any) {
       showToast(e.message, 'error');
     } finally {
@@ -38,6 +66,18 @@ export default function HomePage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  // Keyboard shortcut for search
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
+  }, []);
 
   function showToast(msg: string, type: 'success'|'error' = 'success') {
     setToast({ msg, type });
@@ -96,16 +136,62 @@ export default function HomePage() {
           </Button>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-10 max-w-2xl">
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-[var(--text-faint)] group-focus-within:text-[var(--amber)] transition-colors z-10">
+              <Search size={18} strokeWidth={2.5} />
+            </div>
+            <input 
+              ref={searchRef}
+              type="text"
+              placeholder="Search projects by name or description..." 
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-11 pr-14 py-3.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-2xl text-[15px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus:outline-none focus:border-[var(--amber)] focus:ring-4 focus:ring-[var(--amber)]/10 transition-all shadow-sm"
+            />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+               <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-[var(--text-faint)] bg-[var(--surface-1)] border border-[var(--border)] rounded opacity-60">
+                <span className="text-[10px]">⌘</span>K
+              </kbd>
+            </div>
+          </div>
+        </div>
+
         {/* Stats bar */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {[
-            { label: 'Total Projects', value: projects.length },
-            { label: 'Active', value: projects.length },
-            { label: 'Backend', value: <span className="text-emerald-400 font-mono text-xs">● Online</span> },
-          ].map((s, i) => (
-            <div key={i} className="bg-[var(--surface-1)] border border-[var(--border)] rounded-lg px-4 py-3">
-              <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1">{s.label}</p>
-              <p className="text-xl font-bold text-[var(--text)] font-mono">{s.value}</p>
+            { label: 'Total Projects', value: projects.length, icon: <Folder className="text-[var(--amber)]" />, color: 'amber' },
+            { label: 'Intelligence Runs', value: totalRuns, icon: <Brain className="text-cyan-400" />, color: 'cyan' },
+            { 
+              label: 'Running Agents', 
+              value: runningAgents.length, 
+              icon: <Zap className="text-amber-400 animate-pulse" />, 
+              color: 'amber',
+              onClick: () => setShowRunningModal(true),
+              clickable: true,
+              visible: runningAgents.length > 0
+            },
+            { label: 'Platform Status', value: platformOnline ? 'Online' : 'Offline', icon: <Activity className={platformOnline ? 'text-emerald-400' : 'text-red-400'} />, color: platformOnline ? 'emerald' : 'red' },
+          ].filter(s => s.visible !== false).map((s, i) => (
+            <div 
+              key={i} 
+              onClick={s.onClick}
+              className={clsx(
+                "relative group bg-[var(--surface-1)] border border-[var(--border)] rounded-2xl p-6 flex items-center gap-5 overflow-hidden transition-all hover:border-[var(--border-bright)] hover:shadow-xl",
+                s.clickable ? "cursor-pointer hover:-translate-y-1" : "cursor-default"
+              )}
+            >
+              {/* Decorative aura */}
+              <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-10 bg-${s.color}-500 group-hover:opacity-20 transition-opacity`} />
+              
+              <div className="w-14 h-14 rounded-xl bg-[var(--surface-2)] flex items-center justify-center shrink-0">
+                {s.icon}
+              </div>
+              <div>
+                <p className="text-[12px] uppercase tracking-wider text-[var(--text-faint)] font-bold mb-0.5">{s.label}</p>
+                <p className="text-2xl font-black text-[var(--text)] tracking-tight">{s.value}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -126,14 +212,31 @@ export default function HomePage() {
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {projects.map((p) => (
-              <ProjectCard
-                key={p.id}
-                project={p}
-                onEdit={() => { setEditing(p); setEditName(p.name); setEditDesc(p.description || ''); }}
-                onDelete={() => setDeleting(p)}
-              />
-            ))}
+            {projects
+              .filter(p => 
+                p.name.toLowerCase().includes(search.toLowerCase()) || 
+                (p.description || '').toLowerCase().includes(search.toLowerCase())
+              )
+              .length === 0 ? (
+                <div className="col-span-full py-12 text-center">
+                  <p className="text-[var(--text-dim)]">No projects found matching "{search}"</p>
+                  <button onClick={() => setSearch('')} className="text-[var(--amber)] hover:underline mt-2 text-sm font-medium">Clear search</button>
+                </div>
+              ) : (
+                projects
+                  .filter(p => 
+                    p.name.toLowerCase().includes(search.toLowerCase()) || 
+                    (p.description || '').toLowerCase().includes(search.toLowerCase())
+                  )
+                  .map((p) => (
+                    <ProjectCard
+                      key={p.id}
+                      project={p}
+                      onEdit={() => { setEditing(p); setEditName(p.name); setEditDesc(p.description || ''); }}
+                      onDelete={() => setDeleting(p)}
+                    />
+                  ))
+              )}
           </div>
         )}
       </div>
@@ -171,6 +274,32 @@ export default function HomePage() {
         <div className="flex gap-2 justify-end">
           <Button variant="ghost" onClick={() => setDeleting(null)}>Cancel</Button>
           <Button variant="danger" onClick={handleDelete}>Delete Project</Button>
+        </div>
+      </Modal>
+
+      {/* Running Agents Modal */}
+      <Modal open={showRunningModal} onClose={() => setShowRunningModal(false)} title="Running Intelligence Agents" wide>
+        <div className="space-y-3">
+          {runningAgents.map(r => (
+            <div key={r.id} className="flex items-center justify-between p-4 bg-[var(--surface-2)] rounded-xl border border-[var(--border)] hover:border-[var(--amber)]/30 transition-all">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-[var(--surface-1)] flex items-center justify-center">
+                  <Zap size={18} className="text-amber-400 animate-pulse" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-[var(--text)]">{r.run_name || `Agent Run #${r.id}`}</p>
+                  <p className="text-[11px] text-[var(--text-faint)] uppercase font-mono">Project ID: {(r as any).projectId} · {r.status}</p>
+                </div>
+              </div>
+              <Link 
+                href={`/projects/${(r as any).projectId}/runs/${r.id}`}
+                className="px-4 py-2 bg-[var(--surface-1)] hover:bg-[var(--surface-3)] text-[var(--text)] text-xs font-bold rounded-lg border border-[var(--border)] transition-all"
+                onClick={() => setShowRunningModal(false)}
+              >
+                View Progress
+              </Link>
+            </div>
+          ))}
         </div>
       </Modal>
 
