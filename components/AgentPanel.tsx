@@ -5,6 +5,7 @@ import { Play, Square, Download, RefreshCw, Eye, ChevronRight, Check, CheckCircl
 import { api, AgentRun, Document, QuerySpec } from '@/lib/api';
 import { Button, Input, StatusBadge, Toast, Spinner, SectionHeader, Modal } from '@/components/ui';
 import clsx from 'clsx';
+import * as XLSX from 'xlsx';
 
 const STEPS = [
   'Select project',
@@ -93,28 +94,57 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
     const file = e.target.files?.[0];
     if (!file) return;
     setSourceFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target?.result as string;
-      const lines = text.split('\n').filter(Boolean);
-      if (lines.length < 2) return;
-      const sep = lines[0].includes('\t') ? '\t' : ',';
-      const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g, ''));
-      setColumns(headers);
-      const rows = lines.slice(1, 51).map(l => {
-        const cells = l.split(sep).map(c => c.trim().replace(/^"|"$/g, ''));
-        const obj: any = {};
-        headers.forEach((h, i) => { obj[h] = cells[i] || ''; });
-        return obj;
-      });
-      setParsedRows(rows);
-      // Auto-detect common column names
-      setHeaderCol(headers.find(h => /header|question|query/i.test(h)) || headers[0]);
-      setConceptCol(headers.find(h => /concept|theme|category/i.test(h)) || '');
-      setSubheaderCol(headers.find(h => /sub.?header|sub.?question/i.test(h)) || '');
-      setUploadModal(true);
-    };
-    reader.readAsText(file);
+    
+    if (file.name.toLowerCase().endsWith('.xlsx')) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const data = new Uint8Array(ev.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const json = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
+        
+        if (json.length < 2) return;
+        const headers = (json[0] as string[]).map(h => String(h).trim());
+        setColumns(headers);
+        
+        const rows = json.slice(1, 51).map((row: any) => {
+          const obj: any = {};
+          headers.forEach((h, i) => { obj[h] = String(row[i] || '').trim(); });
+          return obj;
+        });
+        
+        setParsedRows(rows);
+        setHeaderCol(headers.find(h => /header|question|query/i.test(h)) || headers[0] || '');
+        setConceptCol(headers.find(h => /concept|theme|category/i.test(h)) || '');
+        setSubheaderCol(headers.find(h => /sub.?header|sub.?question/i.test(h)) || '');
+        setUploadModal(true);
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target?.result as string;
+        const lines = text.split('\n').filter(Boolean);
+        if (lines.length < 2) return;
+        const sep = lines[0].includes('\t') ? '\t' : ',';
+        const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g, ''));
+        setColumns(headers);
+        const rows = lines.slice(1, 51).map(l => {
+          const cells = l.split(sep).map(c => c.trim().replace(/^"|"$/g, ''));
+          const obj: any = {};
+          headers.forEach((h, i) => { obj[h] = cells[i] || ''; });
+          return obj;
+        });
+        setParsedRows(rows);
+        // Auto-detect common column names
+        setHeaderCol(headers.find(h => /header|question|query/i.test(h)) || headers[0]);
+        setConceptCol(headers.find(h => /concept|theme|category/i.test(h)) || '');
+        setSubheaderCol(headers.find(h => /sub.?header|sub.?question/i.test(h)) || '');
+        setUploadModal(true);
+      };
+      reader.readAsText(file);
+    }
     if (fileRef.current) fileRef.current.value = ''; // Reset
   }
 
@@ -501,11 +531,11 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                   {/* Upload File Input */}
                   <div className="pt-4">
                     <h4 className="text-sm font-semibold text-[var(--text)] mb-3">Upload new execution sheet</h4>
-                    <input ref={fileRef} type="file" accept=".csv,.tsv,.txt" className="hidden" onChange={handleFileChange} />
+                    <input ref={fileRef} type="file" accept=".csv,.tsv,.txt,.xlsx" className="hidden" onChange={handleFileChange} />
                     <Button variant="outline" onClick={() => fileRef.current?.click()}>
-                      <Upload size={14} className="mr-2" /> Upload (.csv / .tsv)
+                      <Upload size={14} className="mr-2" /> Upload (.csv / .tsv / .xlsx)
                     </Button>
-                    <p className="text-xs text-[var(--text-faint)] mt-2">Maximum file size: 200MB. Select a CSV or TSV to parse and map columns automatically.</p>
+                    <p className="text-xs text-[var(--text-faint)] mt-2">Maximum file size: 200MB. Select a CSV, TSV or XLSX to parse and map columns automatically.</p>
                   </div>
                 </div>
               </div>
