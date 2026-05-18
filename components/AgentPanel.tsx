@@ -152,14 +152,20 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
     if (!headerCol) { showToast('Header column is required', 'error'); return; }
     setUploadingSpec(true);
     try {
+      const rowsWithAnalysisMode = parsedRows.map(row => ({
+        ...row,
+        _fixed_analysis_mode: 'factual'
+      }));
+
       await api.agent.querySpec.upload(projectId, {
         source_file_name: sourceFileName,
         column_mapping: {
-          header: headerCol,
+          question: headerCol,
+          header: subheaderCol || null,
           concept: conceptCol || null,
-          subheader: subheaderCol || null,
+          analysis_mode: '_fixed_analysis_mode'
         },
-        rows: parsedRows,
+        rows: rowsWithAnalysisMode,
       });
       showToast('Execution sheet uploaded successfully');
       setUploadModal(false);
