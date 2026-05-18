@@ -26,6 +26,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
   // Form State
   const [runName, setRunName] = useState('');
   const [selectedDocs, setSelectedDocs] = useState<Set<number>>(new Set());
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [maxVerbatims, setMaxVerbatims] = useState('5');
   const [retrievalMode, setRetrievalMode] = useState('global');
   const [llmModel, setLlmModel] = useState('gpt-4o-mini');
@@ -39,8 +40,8 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
   const [parsedRows, setParsedRows] = useState<any[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
   const [headerCol, setHeaderCol] = useState('');
-  const [conceptCol, setConceptCol] = useState('');
-  const [subheaderCol, setSubheaderCol] = useState('');
+  const [questionCol, setQuestionCol] = useState('');
+  const [analysisModeCol, setAnalysisModeCol] = useState('');
   const [sourceFileName, setSourceFileName] = useState('');
   const [uploadingSpec, setUploadingSpec] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -55,6 +56,13 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
 
   const readyDocs = documents.filter(d => ['completed','ingested','processed'].includes(d.processing_status?.toLowerCase()));
   const selectedSpec = specs.find(s => s.id === selectedSpecId) || null;
+
+  useEffect(() => {
+    if (isInitialLoad && readyDocs.length > 0) {
+      setSelectedDocs(new Set(readyDocs.map(d => d.id)));
+      setIsInitialLoad(false);
+    }
+  }, [readyDocs, isInitialLoad]);
 
   function showToast(msg: string, type: 'success'|'error' = 'success') {
     setToast({ msg, type });
@@ -115,9 +123,9 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
         });
         
         setParsedRows(rows);
-        setHeaderCol(headers.find(h => /header|question|query/i.test(h)) || headers[0] || '');
-        setConceptCol(headers.find(h => /concept|theme|category/i.test(h)) || '');
-        setSubheaderCol(headers.find(h => /sub.?header|sub.?question/i.test(h)) || '');
+        setHeaderCol(headers.find(h => /header/i.test(h)) || '');
+        setQuestionCol(headers.find(h => /question|query/i.test(h)) || headers[0] || '');
+        setAnalysisModeCol(headers.find(h => /analysis|mode/i.test(h)) || '');
         setUploadModal(true);
       };
       reader.readAsArrayBuffer(file);
@@ -138,9 +146,9 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
         });
         setParsedRows(rows);
         // Auto-detect common column names
-        setHeaderCol(headers.find(h => /header|question|query/i.test(h)) || headers[0]);
-        setConceptCol(headers.find(h => /concept|theme|category/i.test(h)) || '');
-        setSubheaderCol(headers.find(h => /sub.?header|sub.?question/i.test(h)) || '');
+        setHeaderCol(headers.find(h => /header/i.test(h)) || '');
+        setQuestionCol(headers.find(h => /question|query/i.test(h)) || headers[0] || '');
+        setAnalysisModeCol(headers.find(h => /analysis|mode/i.test(h)) || '');
         setUploadModal(true);
       };
       reader.readAsText(file);
@@ -149,23 +157,18 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
   }
 
   async function handleSpecUpload() {
-    if (!headerCol) { showToast('Header column is required', 'error'); return; }
+    if (!questionCol) { showToast('Questions column is required', 'error'); return; }
+    if (!analysisModeCol) { showToast('Analysis Mode column is required', 'error'); return; }
     setUploadingSpec(true);
     try {
-      const rowsWithAnalysisMode = parsedRows.map(row => ({
-        ...row,
-        _fixed_analysis_mode: 'factual'
-      }));
-
       await api.agent.querySpec.upload(projectId, {
         source_file_name: sourceFileName,
         column_mapping: {
-          question: headerCol,
-          header: subheaderCol || null,
-          concept: conceptCol || null,
-          analysis_mode: '_fixed_analysis_mode'
+          question: questionCol,
+          header: headerCol || null,
+          analysis_mode: analysisModeCol
         },
-        rows: rowsWithAnalysisMode,
+        rows: parsedRows,
       });
       showToast('Execution sheet uploaded successfully');
       setUploadModal(false);
@@ -196,7 +199,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
     try {
       const res = await api.agent.start({
         project_id: projectId,
-        document_ids: selectedDocs.size > 0 ? Array.from(selectedDocs) : undefined,
+        document_ids: Array.from(selectedDocs),
         run_name: runName.trim() || undefined,
         max_verbatims: parseInt(maxVerbatims) || 5,
         retrieval_mode: retrievalMode,
@@ -422,9 +425,23 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                       <label className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] font-medium flex items-center gap-2">
                         <FileText size={14} /> Available Documents
                       </label>
-                      <span className="text-[11px] text-[var(--text-faint)] bg-[var(--surface-3)] px-2 py-0.5 rounded">
-                        {selectedDocs.size === 0 ? 'All Selected' : `${selectedDocs.size} Selected`}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => {
+                            if (selectedDocs.size === readyDocs.length) {
+                              setSelectedDocs(new Set());
+                            } else {
+                              setSelectedDocs(new Set(readyDocs.map(d => d.id)));
+                            }
+                          }}
+                          className="text-[11px] text-amber-500 hover:text-amber-400 font-medium transition-colors"
+                        >
+                          {selectedDocs.size === readyDocs.length ? 'Deselect All' : 'Select All'}
+                        </button>
+                        <span className="text-[11px] text-[var(--text-faint)] bg-[var(--surface-3)] px-2 py-0.5 rounded">
+                          {selectedDocs.size === 0 && readyDocs.length > 0 ? '0 Selected' : `${selectedDocs.size} / ${readyDocs.length} Selected`}
+                        </span>
+                      </div>
                     </div>
                     
                     {readyDocs.length === 0 ? (
@@ -537,11 +554,11 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                   {/* Upload File Input */}
                   <div className="pt-4">
                     <h4 className="text-sm font-semibold text-[var(--text)] mb-3">Upload new execution sheet</h4>
-                    <input ref={fileRef} type="file" accept=".csv,.tsv,.txt,.xlsx" className="hidden" onChange={handleFileChange} />
+                    <input ref={fileRef} type="file" accept=".csv,.txt,.xlsx" className="hidden" onChange={handleFileChange} />
                     <Button variant="outline" onClick={() => fileRef.current?.click()}>
-                      <Upload size={14} className="mr-2" /> Upload (.csv / .tsv / .xlsx)
+                      <Upload size={14} className="mr-2" /> Upload (.csv / .xlsx)
                     </Button>
-                    <p className="text-xs text-[var(--text-faint)] mt-2">Maximum file size: 200MB. Select a CSV, TSV or XLSX to parse and map columns automatically.</p>
+                    <p className="text-xs text-[var(--text-faint)] mt-2">Maximum file size: 200MB. Select a CSV or XLSX to parse and map columns automatically.</p>
                   </div>
                 </div>
               </div>
@@ -606,7 +623,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-[11px] uppercase text-[var(--text-faint)] mb-1 font-medium">Documents Target</p>
-                        <p className="text-sm text-[var(--text)]">{selectedDocs.size === 0 ? `All (${readyDocs.length})` : selectedDocs.size}</p>
+                        <p className="text-sm text-[var(--text)]">{selectedDocs.size}</p>
                       </div>
                       <div>
                         <p className="text-[11px] uppercase text-[var(--text-faint)] mb-1 font-medium">Execution Type</p>
@@ -643,7 +660,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                 <Button variant="ghost" onClick={() => setStep(2)}>
                   <ArrowLeft size={16} className="mr-2" /> Back
                 </Button>
-                <Button variant="primary" onClick={startRun} disabled={!selectedSpecId} loading={generating}>
+                <Button variant="primary" onClick={startRun} disabled={!selectedSpecId || selectedDocs.size === 0} loading={generating}>
                   Start Agent Run <Play size={14} className="ml-2 fill-current" />
                 </Button>
               </div>
@@ -755,36 +772,36 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
             <FileSpreadsheet className="shrink-0" />
             <div>
               <p className="font-semibold mb-1">Found {parsedRows.length} rows</p>
-              <p className="text-[var(--text-dim)]">Map your spreadsheet columns to the system fields. The "Header / Question" field is required to define what the agent will research.</p>
+              <p className="text-[var(--text-dim)]">Map your spreadsheet columns to the system fields. The "Questions" and "Analysis Mode" fields are required.</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--text)]">Header / Question <span className="text-red-400">*</span></label>
+              <label className="text-xs font-semibold text-[var(--text)]">Headers</label>
               <select value={headerCol} onChange={e => setHeaderCol(e.target.value)} className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500">
+                <option value="">-- Select Column --</option>
+                {columns.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <p className="text-[11px] text-[var(--text-faint)]">Used for grouping questions</p>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-[var(--text)]">Questions <span className="text-red-400">*</span></label>
+              <select value={questionCol} onChange={e => setQuestionCol(e.target.value)} className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500">
                 <option value="">-- Select Column --</option>
                 {columns.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <p className="text-[11px] text-[var(--text-faint)]">The main query or requirement</p>
             </div>
-            
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--text)]">Sub-header / Criteria</label>
-              <select value={subheaderCol} onChange={e => setSubheaderCol(e.target.value)} className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500">
-                <option value="">-- Select Column --</option>
-                {columns.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <p className="text-[11px] text-[var(--text-faint)]">Additional detail or nuance</p>
-            </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--text)]">Concept / Theme</label>
-              <select value={conceptCol} onChange={e => setConceptCol(e.target.value)} className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500">
+              <label className="text-xs font-semibold text-[var(--text)]">Analysis Mode <span className="text-red-400">*</span></label>
+              <select value={analysisModeCol} onChange={e => setAnalysisModeCol(e.target.value)} className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500">
                 <option value="">-- Select Column --</option>
                 {columns.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              <p className="text-[11px] text-[var(--text-faint)]">Used for grouping questions</p>
+              <p className="text-[11px] text-[var(--text-faint)]">Factual, behavioural, or deep</p>
             </div>
           </div>
 
@@ -797,8 +814,8 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                 <tr>
                   {columns.map(c => (
                     <th key={c} className={clsx("px-4 py-2 font-medium truncate max-w-[150px]", 
-                      c === headerCol ? 'text-amber-500' : 
-                      c === subheaderCol || c === conceptCol ? 'text-[var(--text)]' : ''
+                      c === questionCol ? 'text-amber-500' : 
+                      c === headerCol || c === analysisModeCol ? 'text-[var(--text)]' : ''
                     )}>{c}</th>
                   ))}
                 </tr>
@@ -817,7 +834,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
 
           <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
             <Button variant="ghost" onClick={() => setUploadModal(false)}>Cancel</Button>
-            <Button variant="primary" onClick={handleSpecUpload} loading={uploadingSpec} disabled={!headerCol}>
+            <Button variant="primary" onClick={handleSpecUpload} loading={uploadingSpec} disabled={!questionCol || !analysisModeCol}>
               Upload Spec <Upload size={14} className="ml-2" />
             </Button>
           </div>
