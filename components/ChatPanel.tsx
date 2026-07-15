@@ -4,6 +4,7 @@ import { Send, FileText, ChevronDown, ChevronUp, Zap, Brain, Search, Plus, Trash
 import { api, ChatResponse, Document, ChatSession, ChatMessage } from '@/lib/api';
 import { Button, Spinner, Modal, Input } from '@/components/ui';
 import clsx from 'clsx';
+import ReactMarkdown from 'react-markdown';
 
 type SearchType = 'factual' | 'behavioural' | 'deep research';
 
@@ -462,7 +463,15 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
                   <p className="text-red-400 text-xs">{msg.error}</p>
                 ) : (
                   <>
-                    <p className="text-[var(--text)] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                    {msg.role === 'assistant' ? (
+                      <div className="chat-markdown">
+                        <ReactMarkdown>
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                    )}
 
                     {msg.meta && msg.role === 'assistant' && (
                       <div className="mt-3 pt-3 border-t border-[var(--border)] flex flex-wrap gap-3 text-[11px] text-[var(--text-faint)]">

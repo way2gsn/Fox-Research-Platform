@@ -201,3 +201,140 @@ h1, h2, h3, h4, .font-premium {
   padding: 0.8rem 1.2rem;
   border-radius: 18px;
 }
+
+/* --- Premium AI Chat Markdown Styling --- */
+.chat-markdown {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.925rem;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+.chat-markdown p {
+  margin-bottom: 0.75rem;
+  font-weight: 400;
+}
+.chat-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3,
+.chat-markdown h4,
+.chat-markdown h5,
+.chat-markdown h6 {
+  font-family: 'Outfit', sans-serif;
+  color: var(--text);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+.chat-markdown h1:first-child,
+.chat-markdown h2:first-child,
+.chat-markdown h3:first-child,
+.chat-markdown h4:first-child,
+.chat-markdown h5:first-child,
+.chat-markdown h6:first-child {
+  margin-top: 0;
+}
+.chat-markdown h1 { font-size: 1.2rem; }
+.chat-markdown h2 { font-size: 1.1rem; }
+.chat-markdown h3 { font-size: 1.0rem; }
+
+.chat-markdown strong {
+  font-weight: 700;
+  color: #D94A00; /* Rich contrast dark orange for light mode */
+}
+.dark .chat-markdown strong {
+  color: #FFA726; /* Premium soft orange/amber for dark mode */
+}
+
+/* Custom Bullet List Styles (Pointers) */
+.chat-markdown ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.chat-markdown ul li {
+  position: relative;
+  padding-left: 1.25rem;
+  margin-bottom: 0.35rem;
+  font-weight: 400;
+}
+.chat-markdown ul li:last-child {
+  margin-bottom: 0;
+}
+.chat-markdown ul li::before {
+  content: "✦"; /* Elegant premium diamond pointer */
+  position: absolute;
+  left: 0;
+  color: var(--amber);
+  font-size: 0.7rem;
+  top: 0.15rem;
+}
+
+/* Custom Numbered List Styles */
+.chat-markdown ol {
+  counter-reset: chat-list-counter;
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.chat-markdown ol li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.35rem;
+  font-weight: 400;
+}
+.chat-markdown ol li:last-child {
+  margin-bottom: 0;
+}
+.chat-markdown ol li::before {
+  counter-increment: chat-list-counter;
+  content: counter(chat-list-counter) ".";
+  position: absolute;
+  left: 0;
+  color: var(--amber);
+  font-weight: 600;
+}
+
+/* Code Styles */
+.chat-markdown code {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.825rem;
+  background: var(--surface-3);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  color: var(--amber-dim);
+}
+.dark .chat-markdown code {
+  background: var(--surface-3);
+  color: #FFB74D;
+}
+.chat-markdown pre {
+  background: var(--surface-3);
+  border: 1px solid var(--border-bright);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+}
+.chat-markdown pre code {
+  background: transparent;
+  padding: 0;
+  color: var(--text);
+  font-size: 0.8rem;
+}
+
+/* Blockquote */
+.chat-markdown blockquote {
+  border-left: 3px solid var(--amber);
+  padding-left: 0.75rem;
+  margin: 0.75rem 0;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
