@@ -1,6 +1,6 @@
 'use client';
 import { ReactNode, ButtonHTMLAttributes } from 'react';
-import { X } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import clsx from 'clsx';
 
 // ─── Button ──────────────────────────────────────────────────────────────────
@@ -156,11 +156,25 @@ export function SectionHeader({ title, subtitle, action }: { title: string; subt
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 export function Toast({ message, type = 'info', onClose }: { message: string; type?: 'info'|'success'|'error'; onClose: () => void }) {
-  const colors = { info: 'bg-[var(--surface-3)] text-[var(--text)]', success: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30', error: 'bg-red-500/20 text-red-300 border border-red-500/30' };
+  const styles = {
+    info: 'bg-[#181d28] text-amber-200 border border-amber-500/50 shadow-[0_8px_30px_rgba(0,0,0,0.8)] shadow-amber-500/10',
+    success: 'bg-[#181d28] text-emerald-200 border border-emerald-500/50 shadow-[0_8px_30px_rgba(0,0,0,0.8)] shadow-emerald-500/10',
+    error: 'bg-[#181d28] text-red-200 border border-red-500/50 shadow-[0_8px_30px_rgba(0,0,0,0.8)] shadow-red-500/10'
+  };
+
+  const icons = {
+    info: <Info size={18} className="text-amber-400 shrink-0" />,
+    success: <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />,
+    error: <AlertCircle size={18} className="text-red-400 shrink-0" />
+  };
+
   return (
-    <div className={clsx('fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl text-sm fade-up', colors[type])}>
-      {message}
-      <button onClick={onClose} className="opacity-60 hover:opacity-100"><X size={14} /></button>
+    <div className={clsx('fixed bottom-6 right-6 z-[9999] flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs sm:text-sm font-semibold fade-up backdrop-blur-xl transition-all', styles[type])}>
+      {icons[type]}
+      <span className="leading-snug">{message}</span>
+      <button onClick={onClose} className="ml-2 p-1 text-[var(--text-dim)] hover:text-white transition-colors rounded hover:bg-white/10">
+        <X size={14} />
+      </button>
     </div>
   );
 }

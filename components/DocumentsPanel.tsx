@@ -9,6 +9,7 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
   const [docs, setDocs] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadDocType, setUploadDocType] = useState<'IDI' | 'FGD' | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [deletingAll, setDeletingAll] = useState(false);
   const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
@@ -55,10 +56,18 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
     if (!files || files.length === 0) return;
     setUploading(true);
     const arr = Array.from(files);
+    const allowedExtensions = ['.pdf', '.docx', '.doc'];
     let successCount = 0;
+
     for (const file of arr) {
+      const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(ext)) {
+        showToast(`${file.name}: Invalid file type. Only PDF, DOCX, and DOC files are allowed.`, 'error');
+        continue;
+      }
+
       try {
-        await api.documents.upload(projectId, file);
+        await api.documents.upload(projectId, file, uploadDocType);
         successCount++;
       } catch (e: any) {
         showToast(`${file.name}: ${e.message}`, 'error');
@@ -66,7 +75,18 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
     }
     if (successCount > 0) showToast(`${successCount} file(s) queued for ingestion`);
     setUploading(false);
+    if (inputRef.current) inputRef.current.value = '';
     load();
+  }
+
+  async function handleUpdateDocType(docId: number, docType: 'IDI' | 'FGD' | null) {
+    try {
+      await api.documents.updateDocType(docId, docType);
+      setDocs(prev => prev.map(d => d.id === docId ? { ...d, doc_type: docType } : d));
+      showToast(`Doc Type updated to ${docType || 'None'}`);
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    }
   }
 
   function toggleSelect(id: number) {
@@ -123,10 +143,11 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
   return (
     <div>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-3 mb-4">
         <input
           ref={inputRef}
           type="file"
+          accept=".pdf,.docx,.doc"
           multiple
           className="hidden"
           onChange={e => handleUpload(e.target.files)}
@@ -134,6 +155,18 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
         <Button onClick={() => inputRef.current?.click()} loading={uploading} size="sm">
           <Upload size={13} /> Upload Files
         </Button>
+        <div className="flex items-center gap-1.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-md px-2.5 py-1 text-xs">
+          <span className="text-[var(--text-faint)] text-[11px] font-medium uppercase tracking-wider">Doc Type:</span>
+          <select
+            value={uploadDocType || ''}
+            onChange={e => setUploadDocType((e.target.value as 'IDI' | 'FGD') || null)}
+            className="bg-transparent text-[var(--text)] font-mono focus:outline-none cursor-pointer"
+          >
+            <option value="" className="bg-[var(--surface-1)]">None</option>
+            <option value="IDI" className="bg-[var(--surface-1)]">IDI</option>
+            <option value="FGD" className="bg-[var(--surface-1)]">FGD</option>
+          </select>
+        </div>
         <Button variant="outline" size="sm" onClick={load}>
           <RefreshCw size={13} /> Refresh
         </Button>
@@ -156,7 +189,7 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
         onDragOver={e => { e.preventDefault(); }}
         onDrop={e => { e.preventDefault(); handleUpload(e.dataTransfer.files); }}
       >
-        Drop files here or click to upload · PDF, DOCX, TXT, XLSX and more supported
+        Drop files here or click to upload · Only PDF, DOCX, and DOC files supported
       </div>
 
       {/* Document list */}
@@ -168,40 +201,52 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
         <EmptyState icon={<FileText size={32} />} title="No documents yet" description="Upload files to begin indexing them into your knowledge base." />
       ) : (
         <div className="rounded-lg overflow-hidden border border-[var(--border)] overflow-x-auto">
-          <div className="min-w-[500px]">
+          <div className="min-w-[650px]">
             {/* Table header */}
-            <div className="grid grid-cols-[24px_1fr_100px_80px_100px] gap-3 px-3 py-2 bg-[var(--surface-2)] text-[11px] uppercase tracking-wider text-[var(--text-faint)] font-medium">
+            <div className="grid grid-cols-[24px_1fr_110px_90px_80px_100px] gap-3 px-3 py-2 bg-[var(--surface-2)] text-[11px] uppercase tracking-wider text-[var(--text-faint)] font-medium">
               <input type="checkbox" checked={selected.size === docs.length && docs.length > 0} onChange={toggleAll} className="w-3.5 h-3.5 accent-amber-500" />
-            <span>File</span>
-            <span>Type</span>
-            <span>Size</span>
-            <span>Status</span>
-          </div>
-          {docs.map((doc, idx) => (
-            <div
-              key={doc.id}
-              className={clsx(
-                'grid grid-cols-[24px_1fr_100px_80px_100px] gap-3 items-center px-3 py-2.5 border-t border-[var(--border)] text-sm transition-colors cursor-pointer',
-                selected.has(doc.id) ? 'bg-amber-500/5' : 'hover:bg-[var(--surface-2)]'
-              )}
-              onClick={() => toggleSelect(doc.id)}
-            >
-              <input
-                type="checkbox"
-                checked={selected.has(doc.id)}
-                onChange={() => toggleSelect(doc.id)}
-                onClick={e => e.stopPropagation()}
-                className="w-3.5 h-3.5 accent-amber-500"
-              />
-              <div className="flex items-center gap-2 min-w-0">
-                {statusIcon(doc.processing_status)}
-                <span className="truncate text-xs text-[var(--text)]">{doc.original_file_name || doc.file_name}</span>
-              </div>
-              <span className="text-[11px] font-mono text-[var(--text-faint)] truncate">{doc.file_type?.split('/')[1] || '—'}</span>
-              <span className="text-[11px] font-mono text-[var(--text-faint)]">{formatSize(doc.file_size)}</span>
-              <StatusBadge status={doc.processing_status || 'unknown'} />
+              <span>File</span>
+              <span>Doc Type</span>
+              <span>Format</span>
+              <span>Size</span>
+              <span>Status</span>
             </div>
-          ))}
+            {docs.map((doc) => (
+              <div
+                key={doc.id}
+                className={clsx(
+                  'grid grid-cols-[24px_1fr_110px_90px_80px_100px] gap-3 items-center px-3 py-2.5 border-t border-[var(--border)] text-sm transition-colors cursor-pointer',
+                  selected.has(doc.id) ? 'bg-amber-500/5' : 'hover:bg-[var(--surface-2)]'
+                )}
+                onClick={() => toggleSelect(doc.id)}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.has(doc.id)}
+                  onChange={() => toggleSelect(doc.id)}
+                  onClick={e => e.stopPropagation()}
+                  className="w-3.5 h-3.5 accent-amber-500"
+                />
+                <div className="flex items-center gap-2 min-w-0">
+                  {statusIcon(doc.processing_status)}
+                  <span className="truncate text-xs text-[var(--text)]">{doc.original_file_name || doc.file_name}</span>
+                </div>
+                <div className="shrink-0" onClick={e => e.stopPropagation()}>
+                  <select
+                    value={doc.doc_type || ''}
+                    onChange={e => handleUpdateDocType(doc.id, (e.target.value as 'IDI' | 'FGD') || null)}
+                    className="bg-[var(--surface-1)] border border-[var(--border)] text-[var(--text-dim)] hover:text-[var(--text)] rounded px-2 py-1 text-xs font-mono focus:outline-none focus:border-amber-500/60 transition-colors cursor-pointer"
+                  >
+                    <option value="" className="bg-[var(--surface-1)]">— None —</option>
+                    <option value="IDI" className="bg-[var(--surface-1)]">IDI</option>
+                    <option value="FGD" className="bg-[var(--surface-1)]">FGD</option>
+                  </select>
+                </div>
+                <span className="text-[11px] font-mono text-[var(--text-faint)] truncate">{doc.file_type?.split('/')[1] || '—'}</span>
+                <span className="text-[11px] font-mono text-[var(--text-faint)]">{formatSize(doc.file_size)}</span>
+                <StatusBadge status={doc.processing_status || 'unknown'} />
+              </div>
+            ))}
           </div>
         </div>
       )}

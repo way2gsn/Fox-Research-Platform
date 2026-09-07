@@ -32,9 +32,9 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
   // Current Chat State
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [searchType, setSearchType] = useState<SearchType>('behavioural');
+  const [searchType] = useState<SearchType>('behavioural');
   const [llmModel, setLlmModel] = useState<string>('gpt-4o-mini');
-  const [selectedDocs, setSelectedDocs] = useState<Set<number>>(new Set());
+  const [selectedDocId, setSelectedDocId] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [showSources, setShowSources] = useState<string | null>(null);
   const [docsDropdownOpen, setDocsDropdownOpen] = useState(false);
@@ -102,6 +102,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
     setActiveSessionId(null);
     setMessages([]);
     setInput('');
+    setSelectedDocId(null);
   }
 
   async function send() {
@@ -139,13 +140,15 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
         timestamp: new Date().toISOString()
       });
 
+      const docIds = selectedDocId !== null ? [selectedDocId] : undefined;
+
       // 3. Get AI Response
       const res = await api.chat({
         query: q,
         project_id: projectId,
         search_type: searchType,
         llm_model: llmModel,
-        document_ids: selectedDocs.size > 0 ? Array.from(selectedDocs) : undefined,
+        document_ids: docIds,
         history: messages.filter(m => !m.loading).map(m => ({ 
           role: m.role === 'assistant' ? 'assistant' : 'user',
           content: m.content 
@@ -163,7 +166,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
           type: 'assistant',
           content: res.answer,
           search_type: searchType,
-          document_ids: selectedDocs.size > 0 ? Array.from(selectedDocs) : undefined,
+          document_ids: docIds,
           timestamp: new Date().toISOString(),
           sources: res.sources || []
         });
@@ -207,11 +210,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
     }
   }
 
-  const searchModes: { id: SearchType; label: string; icon: React.ReactNode; desc: string }[] = [
-    { id: 'factual', label: 'Factual', icon: <Search size={13} />, desc: 'Direct facts & lookup' },
-    { id: 'behavioural', label: 'Behavioural', icon: <Brain size={13} />, desc: 'Analytical reasoning' },
-    { id: 'deep research', label: 'Deep Research', icon: <Zap size={13} />, desc: 'Multi-pass synthesis' },
-  ];
+  const selectedDoc = readyDocs.find(d => d.id === selectedDocId);
 
   return (
     <div className="flex-1 min-h-0 flex gap-5 relative">
@@ -320,26 +319,6 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
               </button>
             </div>
           )}
-          {/* Search type */}
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">Mode</p>
-            <div className="flex gap-1">
-              {searchModes.map(m => (
-                <button
-                  key={m.id}
-                  onClick={() => setSearchType(m.id)}
-                  className={clsx(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
-                    searchType === m.id
-                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                      : 'text-[var(--text-dim)] border border-[var(--border)] hover:border-[var(--border-bright)]'
-                  )}
-                >
-                  {m.icon} {m.label}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* LLM Model */}
           <div>
@@ -349,9 +328,8 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
               onChange={e => setLlmModel(e.target.value)}
               className="bg-transparent border border-[var(--border)] text-[var(--text-dim)] rounded-md px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-500/60 hover:border-[var(--border-bright)] transition-all cursor-pointer h-[30px]"
             >
-              <option value="gpt-4o-mini" className="bg-[var(--surface-1)] text-[var(--text)]">GPT-4o Mini</option>
-              <option value="gpt-4o" className="bg-[var(--surface-1)] text-[var(--text)]">GPT-4o</option>
-              <option value="claude-3-haiku" className="bg-[var(--surface-1)] text-[var(--text)]">Claude 3 Haiku</option>
+              <option value="gpt-4o-mini" className="bg-[var(--surface-1)] text-[var(--text)]">GPT-4o Mini (Cost Efficient)</option>
+              <option value="gpt-4o" className="bg-[var(--surface-1)] text-[var(--text)]">GPT-4o (Maximum Accuracy)</option>
             </select>
           </div>
 
@@ -359,7 +337,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
           {readyDocs.length > 0 && (
             <div className="flex-1 min-w-0">
               <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">
-                Filter documents ({selectedDocs.size > 0 ? `${selectedDocs.size} selected` : 'all'})
+                Filter document
               </p>
               <div className="relative">
                 <button
@@ -367,9 +345,9 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
                   className="w-full flex items-center justify-between bg-transparent border border-[var(--border)] text-[var(--text-dim)] hover:text-[var(--text)] rounded-md px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-500/60 hover:border-[var(--border-bright)] transition-all h-[30px]"
                 >
                   <span className="truncate">
-                    {selectedDocs.size === 0 
-                      ? 'All Documents' 
-                      : `${selectedDocs.size} Document${selectedDocs.size > 1 ? 's' : ''}`}
+                    {selectedDoc 
+                      ? (selectedDoc.original_file_name || selectedDoc.file_name)
+                      : 'Select Documents'}
                   </span>
                   <ChevronDown size={14} className={clsx('transition-transform', docsDropdownOpen && 'rotate-180')} />
                 </button>
@@ -378,44 +356,40 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setDocsDropdownOpen(false)} />
                     <div className="absolute z-20 mt-1 w-64 bg-[var(--surface-1)] border border-[var(--border-bright)] rounded-md shadow-xl max-h-60 overflow-y-auto flex flex-col py-1">
-                      {/* Select All Toggle */}
-                      <label className="flex items-center gap-2 px-3 py-2 border-b border-[var(--border)] hover:bg-[var(--surface-2)] cursor-pointer text-xs text-[var(--text)] font-semibold transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={readyDocs.length > 0 && selectedDocs.size === readyDocs.length}
-                          onChange={() => {
-                            if (selectedDocs.size === readyDocs.length) {
-                              setSelectedDocs(new Set());
-                            } else {
-                              setSelectedDocs(new Set(readyDocs.map(d => d.id)));
-                            }
-                          }}
-                          className="accent-amber-500"
-                        />
-                        <span>Select All</span>
-                        <span className="ml-auto text-[var(--text-faint)] font-normal">{readyDocs.length}</span>
-                      </label>
+                      <button
+                        onClick={() => {
+                          setSelectedDocId(null);
+                          setDocsDropdownOpen(false);
+                        }}
+                        className={clsx(
+                          'flex items-center gap-2 px-3 py-2 hover:bg-[var(--surface-2)] cursor-pointer text-xs transition-colors text-left',
+                          selectedDocId === null ? 'text-amber-400 font-medium bg-amber-500/10' : 'text-[var(--text)]'
+                        )}
+                      >
+                        <FileText size={12} className={clsx(selectedDocId === null ? 'text-amber-400' : 'text-[var(--text-faint)]')} />
+                        <span className="truncate">Select Documents</span>
+                      </button>
 
                       {readyDocs.map(d => (
-                        <label
+                        <button
                           key={d.id}
-                          className="flex items-center gap-2 px-3 py-2 hover:bg-[var(--surface-2)] cursor-pointer text-xs text-[var(--text)] transition-colors"
+                          onClick={() => {
+                            setSelectedDocId(selectedDocId === d.id ? null : d.id);
+                            setDocsDropdownOpen(false);
+                          }}
+                          className={clsx(
+                            'flex items-center gap-2 px-3 py-2 hover:bg-[var(--surface-2)] cursor-pointer text-xs transition-colors text-left',
+                            selectedDocId === d.id ? 'text-amber-400 font-medium bg-amber-500/10' : 'text-[var(--text)]'
+                          )}
                         >
-                          <input
-                            type="checkbox"
-                            checked={selectedDocs.has(d.id)}
-                            onChange={() => {
-                              setSelectedDocs(prev => {
-                                const s = new Set(prev);
-                                s.has(d.id) ? s.delete(d.id) : s.add(d.id);
-                                return s;
-                              });
-                            }}
-                            className="accent-amber-500"
-                          />
-                          <FileText size={12} className="text-[var(--text-faint)]" />
-                          <span className="truncate">{d.original_file_name || d.file_name}</span>
-                        </label>
+                          <FileText size={12} className={clsx(selectedDocId === d.id ? 'text-amber-400' : 'text-[var(--text-faint)]')} />
+                          <span className="truncate flex-1">{d.original_file_name || d.file_name}</span>
+                          {d.doc_type && (
+                            <span className="shrink-0 text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                              {d.doc_type}
+                            </span>
+                          )}
+                        </button>
                       ))}
                     </div>
                   </>
@@ -434,7 +408,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
               </div>
               <p className="text-sm font-medium text-[var(--text-dim)]">Ask anything about your documents</p>
               <p className="text-xs text-[var(--text-faint)] mt-1">
-                {readyDocs.length} document{readyDocs.length !== 1 ? 's' : ''} ready · {searchType} mode
+                {readyDocs.length} document{readyDocs.length !== 1 ? 's' : ''} ready
               </p>
               {/* Suggested queries */}
               <div className="flex flex-col gap-2 mt-5">

@@ -25,6 +25,7 @@ export interface Document {
   original_file_name: string;
   file_size: number;
   file_type: string;
+  doc_type?: 'IDI' | 'FGD' | null;
   processing_status: string;
   project_id: number;
   created_at: string;
@@ -180,16 +181,24 @@ export const api = {
 
   documents: {
     list: (projectId: number) => req<Document[]>(`/documents?project_id=${projectId}`),
-    upload: (projectId: number, file: File) => {
+    upload: (projectId: number, file: File, docType?: string | null) => {
       const fd = new FormData();
       fd.append('file', file);
       fd.append('project_id', String(projectId));
+      if (docType) {
+        fd.append('doc_type', docType);
+      }
       return fetch(`${BASE}/upload`, { method: 'POST', body: fd }).then(async (r) => {
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Upload failed');
         return d as { status: string; job_id: number; document_id: number; file_name: string };
       });
     },
+    updateDocType: (documentId: number, docType: 'IDI' | 'FGD' | null) =>
+      req<{ document_id: number; doc_type: 'IDI' | 'FGD' | null }>(`/documents/${documentId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ doc_type: docType }),
+      }),
     delete: (documentIds: number[], projectId?: number) =>
       req<{ deleted: number }>('/documents', {
         method: 'DELETE',
