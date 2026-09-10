@@ -647,7 +647,6 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                         >
                           <option value="gpt-4o-mini">Balanced — gpt-4o-mini (Recommended)</option>
                           <option value="gpt-4o">High Quality — gpt-4o</option>
-                          <option value="claude-3-haiku">Fast — claude-3-haiku</option>
                         </select>
                       </div>
                     </div>

@@ -84,28 +84,47 @@ export default function HomePage() {
     setTimeout(() => setToast(null), 3500);
   }
 
+  const isDuplicateCreate = projects.some(
+    p => p.name.trim().toLowerCase() === newName.trim().toLowerCase()
+  );
+
+  const isDuplicateEdit = editing ? projects.some(
+    p => p.id !== editing.id && p.name.trim().toLowerCase() === editName.trim().toLowerCase()
+  ) : false;
+
   async function handleCreate() {
-    if (!newName.trim()) return;
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    if (isDuplicateCreate) {
+      showToast(`A project named "${trimmed}" already exists.`, 'error');
+      return;
+    }
     setSaving(true);
     try {
-      const p = await api.projects.create(newName.trim(), newDesc.trim());
+      const p = await api.projects.create(trimmed, newDesc.trim());
       setProjects(prev => [p, ...prev]);
       setCreating(false);
       setNewName(''); setNewDesc('');
       showToast('Project created');
-    } catch (e: any) { showToast(e.message, 'error'); }
+    } catch (e: any) { showToast(e.message || 'Failed to create project', 'error'); }
     finally { setSaving(false); }
   }
 
   async function handleEdit() {
     if (!editing) return;
+    const trimmed = editName.trim();
+    if (!trimmed) return;
+    if (isDuplicateEdit) {
+      showToast(`A project named "${trimmed}" already exists.`, 'error');
+      return;
+    }
     setSaving(true);
     try {
-      const p = await api.projects.update(editing.id, { name: editName, description: editDesc });
+      const p = await api.projects.update(editing.id, { name: trimmed, description: editDesc });
       setProjects(prev => prev.map(x => x.id === p.id ? p : x));
       setEditing(null);
       showToast('Project updated');
-    } catch (e: any) { showToast(e.message, 'error'); }
+    } catch (e: any) { showToast(e.message || 'Failed to update project', 'error'); }
     finally { setSaving(false); }
   }
 
@@ -116,7 +135,7 @@ export default function HomePage() {
       setProjects(prev => prev.filter(x => x.id !== deleting.id));
       setDeleting(null);
       showToast('Project deleted');
-    } catch (e: any) { showToast(e.message, 'error'); }
+    } catch (e: any) { showToast(e.message || 'Failed to delete project', 'error'); }
   }
 
   return (
@@ -244,11 +263,25 @@ export default function HomePage() {
       {/* Create Modal */}
       <Modal open={creating} onClose={() => setCreating(false)} title="New Project">
         <div className="flex flex-col gap-4">
-          <Input label="Project Name" value={newName} onChange={e => setNewName(e.target.value)} placeholder="e.g. Market Research 2025" autoFocus />
+          <div>
+            <Input 
+              label="Project Name" 
+              value={newName} 
+              onChange={e => setNewName(e.target.value)} 
+              placeholder="e.g. Market Research 2025" 
+              autoFocus 
+              className={clsx(isDuplicateCreate && newName.trim() !== '' && "!border-red-500 !focus:border-red-500 !focus:ring-red-500/20")}
+            />
+            {isDuplicateCreate && newName.trim() !== '' && (
+              <p className="text-xs text-red-400 font-medium mt-1.5 flex items-center gap-1">
+                <span>⚠️ A project named "{newName.trim()}" already exists. Please enter a unique name.</span>
+              </p>
+            )}
+          </div>
           <Textarea label="Description (optional)" value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="What documents will you analyze?" rows={3} />
           <div className="flex gap-2 justify-end pt-1">
             <Button variant="ghost" onClick={() => setCreating(false)}>Cancel</Button>
-            <Button onClick={handleCreate} loading={saving} disabled={!newName.trim()}>Create Project</Button>
+            <Button onClick={handleCreate} loading={saving} disabled={!newName.trim() || isDuplicateCreate}>Create Project</Button>
           </div>
         </div>
       </Modal>
@@ -256,11 +289,23 @@ export default function HomePage() {
       {/* Edit Modal */}
       <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit Project">
         <div className="flex flex-col gap-4">
-          <Input label="Project Name" value={editName} onChange={e => setEditName(e.target.value)} />
+          <div>
+            <Input 
+              label="Project Name" 
+              value={editName} 
+              onChange={e => setEditName(e.target.value)} 
+              className={clsx(isDuplicateEdit && editName.trim() !== '' && "!border-red-500 !focus:border-red-500 !focus:ring-red-500/20")}
+            />
+            {isDuplicateEdit && editName.trim() !== '' && (
+              <p className="text-xs text-red-400 font-medium mt-1.5 flex items-center gap-1">
+                <span>⚠️ A project named "{editName.trim()}" already exists. Please enter a unique name.</span>
+              </p>
+            )}
+          </div>
           <Textarea label="Description" value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={3} />
           <div className="flex gap-2 justify-end pt-1">
             <Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
-            <Button onClick={handleEdit} loading={saving}>Save Changes</Button>
+            <Button onClick={handleEdit} loading={saving} disabled={!editName.trim() || isDuplicateEdit}>Save Changes</Button>
           </div>
         </div>
       </Modal>

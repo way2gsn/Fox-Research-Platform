@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Send, FileText, ChevronDown, ChevronUp, Zap, Brain, Search, Plus, Trash2, Edit2, MessageSquare, Maximize2, Minimize2, Menu, X } from 'lucide-react';
+import { Send, FileText, ChevronDown, ChevronUp, Zap, Brain, Search, Plus, Trash2, Edit2, MessageSquare, Maximize2, Minimize2, Menu, X, AlertCircle } from 'lucide-react';
 import { api, ChatResponse, Document, ChatSession, ChatMessage } from '@/lib/api';
 import { Button, Spinner, Modal, Input } from '@/components/ui';
 import clsx from 'clsx';
@@ -107,7 +107,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
 
   async function send() {
     const q = input.trim();
-    if (!q || sending) return;
+    if (!q || sending || selectedDocId === null) return;
     
     let currentSessionId = activeSessionId;
 
@@ -140,7 +140,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
         timestamp: new Date().toISOString()
       });
 
-      const docIds = selectedDocId !== null ? [selectedDocId] : undefined;
+      const docIds = typeof selectedDocId === 'number' ? [selectedDocId] : undefined;
 
       // 3. Get AI Response
       const res = await api.chat({
@@ -210,7 +210,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
     }
   }
 
-  const selectedDoc = readyDocs.find(d => d.id === selectedDocId);
+  const selectedDoc = typeof selectedDocId === 'number' ? readyDocs.find(d => d.id === selectedDocId) : null;
 
   return (
     <div className="flex-1 min-h-0 flex gap-5 relative">
@@ -334,47 +334,43 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
           </div>
 
           {/* Doc filter */}
-          {readyDocs.length > 0 && (
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5">
-                Filter document
-              </p>
-              <div className="relative">
-                <button
-                  onClick={() => setDocsDropdownOpen(!docsDropdownOpen)}
-                  className="w-full flex items-center justify-between bg-transparent border border-[var(--border)] text-[var(--text-dim)] hover:text-[var(--text)] rounded-md px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-500/60 hover:border-[var(--border-bright)] transition-all h-[30px]"
-                >
-                  <span className="truncate">
-                    {selectedDoc 
-                      ? (selectedDoc.original_file_name || selectedDoc.file_name)
-                      : 'Select Documents'}
-                  </span>
-                  <ChevronDown size={14} className={clsx('transition-transform', docsDropdownOpen && 'rotate-180')} />
-                </button>
-                
-                {docsDropdownOpen && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setDocsDropdownOpen(false)} />
-                    <div className="absolute z-20 mt-1 w-64 bg-[var(--surface-1)] border border-[var(--border-bright)] rounded-md shadow-xl max-h-60 overflow-y-auto flex flex-col py-1">
-                      <button
-                        onClick={() => {
-                          setSelectedDocId(null);
-                          setDocsDropdownOpen(false);
-                        }}
-                        className={clsx(
-                          'flex items-center gap-2 px-3 py-2 hover:bg-[var(--surface-2)] cursor-pointer text-xs transition-colors text-left',
-                          selectedDocId === null ? 'text-amber-400 font-medium bg-amber-500/10' : 'text-[var(--text)]'
-                        )}
-                      >
-                        <FileText size={12} className={clsx(selectedDocId === null ? 'text-amber-400' : 'text-[var(--text-faint)]')} />
-                        <span className="truncate">Select Documents</span>
-                      </button>
-
-                      {readyDocs.map(d => (
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] uppercase tracking-wider text-[var(--text-faint)] mb-1.5 flex items-center gap-1">
+              Select Reference Document <span className="text-amber-400 font-bold">*</span>
+            </p>
+            <div className="relative">
+              <button
+                onClick={() => setDocsDropdownOpen(!docsDropdownOpen)}
+                className={clsx(
+                  "w-full flex items-center justify-between rounded-md px-3 py-1.5 text-xs font-medium focus:outline-none transition-all h-[30px]",
+                  selectedDocId === null
+                    ? "border border-amber-500/70 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.15)]"
+                    : "bg-transparent border border-[var(--border)] text-[var(--text-dim)] hover:text-[var(--text)] focus:border-amber-500/60 hover:border-[var(--border-bright)]"
+                )}
+              >
+                <span className="truncate flex items-center gap-1.5">
+                  <FileText size={13} className={selectedDocId === null ? "text-amber-400" : "text-[var(--text-faint)]"} />
+                  {selectedDoc
+                    ? (selectedDoc.original_file_name || selectedDoc.file_name)
+                    : 'Select Document (Required)'}
+                </span>
+                <ChevronDown size={14} className={clsx('transition-transform shrink-0', docsDropdownOpen && 'rotate-180')} />
+              </button>
+              
+              {docsDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setDocsDropdownOpen(false)} />
+                  <div className="absolute z-20 mt-1 w-64 bg-[var(--surface-1)] border border-[var(--border-bright)] rounded-md shadow-xl max-h-60 overflow-y-auto flex flex-col py-1">
+                    {readyDocs.length === 0 ? (
+                      <div className="p-3 text-xs text-[var(--text-faint)] text-center">
+                        No documents ready
+                      </div>
+                    ) : (
+                      readyDocs.map(d => (
                         <button
                           key={d.id}
                           onClick={() => {
-                            setSelectedDocId(selectedDocId === d.id ? null : d.id);
+                            setSelectedDocId(d.id);
                             setDocsDropdownOpen(false);
                           }}
                           className={clsx(
@@ -390,13 +386,13 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
                             </span>
                           )}
                         </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Messages */}
@@ -410,12 +406,25 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
               <p className="text-xs text-[var(--text-faint)] mt-1">
                 {readyDocs.length} document{readyDocs.length !== 1 ? 's' : ''} ready
               </p>
+
+              {selectedDocId === null && readyDocs.length > 0 && (
+                <div className="mt-4 px-4 py-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs flex items-center gap-2">
+                  <AlertCircle size={14} className="shrink-0" />
+                  <span>Please select a document above before typing your message</span>
+                </div>
+              )}
+
               {/* Suggested queries */}
               <div className="flex flex-col gap-2 mt-5">
                 {['Summarize the key findings', 'What are the main conclusions?', 'List all recommendations'].map(q => (
                   <button
                     key={q}
-                    onClick={() => setInput(q)}
+                    onClick={() => {
+                      setInput(q);
+                      if (selectedDocId === null && readyDocs.length > 0) {
+                        setDocsDropdownOpen(true);
+                      }
+                    }}
                     className="text-xs px-4 py-2 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-amber-500/30 hover:text-amber-400 transition-all"
                   >
                     {q}
@@ -494,23 +503,58 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
         </div>
 
         {/* Input */}
-        <div className="shrink-0 mt-6 relative premium-input p-1 focus-within:shadow-lg transition-all">
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-            placeholder="Ask a question… (Enter to send, Shift+Enter for new line)"
-            rows={2}
-            className="w-full bg-transparent border-none px-4 py-3 pr-14 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus:outline-none resize-none"
-          />
-          <button
-            onClick={send}
-            disabled={!input.trim() || sending}
-            className="absolute right-3 bottom-3 w-8 h-8 flex items-center justify-center rounded-lg bg-amber-500 text-black disabled:opacity-30 hover:bg-amber-400 transition-all"
-          >
-            {sending ? <Spinner size={14} /> : <Send size={14} />}
-          </button>
+        <div className="shrink-0 mt-6 relative">
+          {selectedDocId === null && readyDocs.length > 0 && (
+            <div className="mb-2.5 px-3.5 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={14} className="shrink-0" />
+                <span>Please select a document from the dropdown above to enable messaging.</span>
+              </div>
+              <button
+                onClick={() => setDocsDropdownOpen(true)}
+                className="px-2.5 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 font-medium text-[11px] transition-colors shrink-0"
+              >
+                Select Document
+              </button>
+            </div>
+          )}
+
+          {readyDocs.length === 0 && (
+            <div className="mb-2.5 px-3.5 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+              <AlertCircle size={14} className="shrink-0" />
+              <span>No processed documents available in this project. Upload a document first to start chatting.</span>
+            </div>
+          )}
+
+          <div className="relative premium-input p-1 focus-within:shadow-lg transition-all">
+            <textarea
+              ref={inputRef}
+              value={input}
+              disabled={selectedDocId === null || readyDocs.length === 0}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+              placeholder={
+                readyDocs.length === 0
+                  ? "No documents available..."
+                  : selectedDocId === null
+                  ? "Select a document above first to ask questions..."
+                  : "Ask a question… (Enter to send, Shift+Enter for new line)"
+              }
+              rows={2}
+              className={clsx(
+                "w-full bg-transparent border-none px-4 py-3 pr-14 text-sm text-[var(--text)] placeholder:text-[var(--text-faint)] focus:outline-none resize-none",
+                (selectedDocId === null || readyDocs.length === 0) && "opacity-60 cursor-not-allowed"
+              )}
+            />
+            <button
+              onClick={send}
+              disabled={!input.trim() || sending || selectedDocId === null || readyDocs.length === 0}
+              title={selectedDocId === null ? "Please select a document first" : "Send message"}
+              className="absolute right-3 bottom-3 w-8 h-8 flex items-center justify-center rounded-lg bg-amber-500 text-black disabled:opacity-30 hover:bg-amber-400 transition-all"
+            >
+              {sending ? <Spinner size={14} /> : <Send size={14} />}
+            </button>
+          </div>
         </div>
       </div>
 
