@@ -58,12 +58,12 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
       const sep = lines[0].includes('\t') ? '\t' : ',';
       const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g, ''));
       setColumns(headers);
-      const rows = lines.slice(1, 51).map(l => {
+      const rows = lines.slice(1).map(l => {
         const cells = l.split(sep).map(c => c.trim().replace(/^"|"$/g, ''));
         const obj: any = {};
         headers.forEach((h, i) => { obj[h] = cells[i] || ''; });
         return obj;
-      });
+      }).filter((r: any) => Object.values(r).some(v => String(v).trim() !== ''));
       setParsedRows(rows);
       // Auto-detect common column names
       setHeaderCol(headers.find(h => /header|question|query/i.test(h)) || headers[0]);
