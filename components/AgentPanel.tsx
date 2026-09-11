@@ -384,9 +384,9 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                           <p className="text-xs text-[var(--text-faint)]">{fmtDate(run.created_at)}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => router.push(`/projects/${projectId}/runs/${run.id}`)}>
+                          {/* <Button variant="ghost" size="sm" onClick={() => router.push(`/projects/${projectId}/runs/${run.id}`)}>
                             <Eye size={13} className="mr-1.5" /> View
-                          </Button>
+                          </Button> */}
                           <Button variant="outline" size="sm" onClick={() => downloadExcel(run.id)} disabled={!run.has_output}>
                             <Download size={13} className="mr-1.5" /> Excel
                           </Button>
@@ -747,9 +747,9 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                 </Button>
                 {completedRun?.status === 'completed' && (
                   <>
-                    <Button variant="outline" onClick={() => router.push(`/projects/${projectId}/runs/${completedRun.id}`)}>
+                    {/* <Button variant="outline" onClick={() => router.push(`/projects/${projectId}/runs/${completedRun.id}`)}>
                       <Eye size={16} className="mr-2" /> View Run
-                    </Button>
+                    </Button> */}
                     <Button variant="primary" onClick={() => downloadExcel(completedRun.id)}>
                       <Download size={16} className="mr-2" /> Download Excel
                     </Button>
