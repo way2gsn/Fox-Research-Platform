@@ -218,6 +218,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
         run_name: runName.trim() || undefined,
         max_verbatims: parseInt(maxVerbatims) || 5,
         retrieval_mode: retrievalMode,
+        llm_model: llmModel,
         generate_subquestions: true,
       });
       setActiveRunId(res.agent_run_id);
