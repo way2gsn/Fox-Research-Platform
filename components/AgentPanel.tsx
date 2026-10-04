@@ -39,9 +39,9 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
   const [uploadModal, setUploadModal] = useState(false);
   const [parsedRows, setParsedRows] = useState<any[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
+  const [conceptCol, setConceptCol] = useState('');
   const [headerCol, setHeaderCol] = useState('');
   const [questionCol, setQuestionCol] = useState('');
-  const [analysisModeCol, setAnalysisModeCol] = useState('');
   const [sourceFileName, setSourceFileName] = useState('');
   const [uploadingSpec, setUploadingSpec] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -123,9 +123,9 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
         }).filter((r: any) => Object.values(r).some(v => String(v).trim() !== ''));
         
         setParsedRows(rows);
-        setHeaderCol(headers.find(h => /header/i.test(h)) || '');
+        setConceptCol(headers.find(h => /concept|theme|category/i.test(h)) || '');
+        setHeaderCol(headers.find(h => /^header$/i.test(h)) || headers.find(h => /header/i.test(h)) || '');
         setQuestionCol(headers.find(h => /question|query/i.test(h)) || headers[0] || '');
-        setAnalysisModeCol(headers.find(h => /analysis|mode/i.test(h)) || '');
         setUploadModal(true);
       };
       reader.readAsArrayBuffer(file);
@@ -146,9 +146,9 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
         }).filter((r: any) => Object.values(r).some(v => String(v).trim() !== ''));
         setParsedRows(rows);
         // Auto-detect common column names
-        setHeaderCol(headers.find(h => /header/i.test(h)) || '');
+        setConceptCol(headers.find(h => /concept|theme|category/i.test(h)) || '');
+        setHeaderCol(headers.find(h => /^header$/i.test(h)) || headers.find(h => /header/i.test(h)) || '');
         setQuestionCol(headers.find(h => /question|query/i.test(h)) || headers[0] || '');
-        setAnalysisModeCol(headers.find(h => /analysis|mode/i.test(h)) || '');
         setUploadModal(true);
       };
       reader.readAsText(file);
@@ -157,14 +157,16 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
   }
 
   async function handleSpecUpload() {
+    if (!headerCol) { showToast('Header column is required', 'error'); return; }
+    if (!questionCol) { showToast('Question column is required', 'error'); return; }
     setUploadingSpec(true);
     try {
       await api.agent.querySpec.upload(projectId, {
         source_file_name: sourceFileName,
         column_mapping: {
-          question: questionCol || null,
-          header: headerCol || null,
-          analysis_mode: analysisModeCol || null
+          concept: conceptCol || null,
+          header: headerCol,
+          question: questionCol,
         },
         rows: parsedRows,
       });
@@ -763,42 +765,42 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
       </div>
       
       {/* Upload Mapping Modal */}
-      <Modal open={uploadModal} onClose={() => setUploadModal(false)} title="Map Query Columns" wide>
+      <Modal open={uploadModal} onClose={() => setUploadModal(false)} title="Map Execution Sheet Columns" wide>
         <div className="space-y-6">
           <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 text-sm p-4 rounded flex items-start gap-3">
             <FileSpreadsheet className="shrink-0" />
             <div>
               <p className="font-semibold mb-1">Found {parsedRows.length} rows</p>
-              <p className="text-[var(--text-dim)]">Map your spreadsheet columns to the system fields (all fields are optional).</p>
+              <p className="text-[var(--text-dim)]">Map your spreadsheet columns for Execution Sheet upload (Header and Question required, Concept optional).</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--text)]">Headers</label>
+              <label className="text-xs font-semibold text-[var(--text)]">Concept (Optional)</label>
+              <select value={conceptCol} onChange={e => setConceptCol(e.target.value)} className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500">
+                <option value="">-- Select Column (Optional) --</option>
+                {columns.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <p className="text-[11px] text-[var(--text-faint)]">Group or theme of questions</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-[var(--text)]">Header *</label>
               <select value={headerCol} onChange={e => setHeaderCol(e.target.value)} className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500">
                 <option value="">-- Select Column --</option>
                 {columns.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              <p className="text-[11px] text-[var(--text-faint)]">Used for grouping questions</p>
+              <p className="text-[11px] text-[var(--text-faint)]">Used for section grouping</p>
             </div>
             
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--text)]">Questions</label>
+              <label className="text-xs font-semibold text-[var(--text)]">Question *</label>
               <select value={questionCol} onChange={e => setQuestionCol(e.target.value)} className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500">
                 <option value="">-- Select Column --</option>
                 {columns.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <p className="text-[11px] text-[var(--text-faint)]">The main query or requirement</p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--text)]">Analysis Mode</label>
-              <select value={analysisModeCol} onChange={e => setAnalysisModeCol(e.target.value)} className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500">
-                <option value="">-- Select Column --</option>
-                {columns.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <p className="text-[11px] text-[var(--text-faint)]">Factual, behavioural, or deep</p>
             </div>
           </div>
 
@@ -811,8 +813,9 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                 <tr>
                   {columns.map(c => (
                     <th key={c} className={clsx("px-4 py-2 font-medium truncate max-w-[150px]", 
-                      c === questionCol ? 'text-amber-500' : 
-                      c === headerCol || c === analysisModeCol ? 'text-[var(--text)]' : ''
+                      c === questionCol ? 'text-amber-500 font-semibold' : 
+                      c === headerCol ? 'text-[var(--text)] font-semibold' : 
+                      c === conceptCol ? 'text-purple-400 font-semibold' : ''
                     )}>{c}</th>
                   ))}
                 </tr>
@@ -831,7 +834,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
 
           <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
             <Button variant="ghost" onClick={() => setUploadModal(false)}>Cancel</Button>
-            <Button variant="primary" onClick={handleSpecUpload} loading={uploadingSpec}>
+            <Button variant="primary" onClick={handleSpecUpload} loading={uploadingSpec} disabled={!headerCol || !questionCol}>
               Upload Spec <Upload size={14} className="ml-2" />
             </Button>
           </div>

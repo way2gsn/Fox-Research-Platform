@@ -52,8 +52,21 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
     return () => clearInterval(pollRef.current);
   }, [docs]);
 
+  function triggerFileUpload() {
+    if (!uploadDocType) {
+      showToast('Document Type (IDI or FGD) is required before uploading files.', 'error');
+      return;
+    }
+    inputRef.current?.click();
+  }
+
   async function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return;
+    if (!uploadDocType) {
+      showToast('Document Type (IDI or FGD) is required before uploading files.', 'error');
+      if (inputRef.current) inputRef.current.value = '';
+      return;
+    }
     setUploading(true);
     const arr = Array.from(files);
     const allowedExtensions = ['.pdf', '.docx', '.doc'];
@@ -152,21 +165,23 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
           className="hidden"
           onChange={e => handleUpload(e.target.files)}
         />
-        <Button onClick={() => inputRef.current?.click()} loading={uploading} size="sm">
-          <Upload size={13} /> Upload Files
-        </Button>
         <div className="flex items-center gap-1.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-md px-2.5 py-1 text-xs">
-          <span className="text-[var(--text-faint)] text-[11px] font-medium uppercase tracking-wider">Doc Type:</span>
+          <span className="text-[var(--text-dim)] text-[11px] font-medium uppercase tracking-wider flex items-center gap-1">
+            Doc Type <span className="text-amber-400 font-bold">*</span>:
+          </span>
           <select
             value={uploadDocType || ''}
             onChange={e => setUploadDocType((e.target.value as 'IDI' | 'FGD') || null)}
             className="bg-transparent text-[var(--text)] font-mono focus:outline-none cursor-pointer"
           >
-            <option value="" className="bg-[var(--surface-1)]">None</option>
+            <option value="" className="bg-[var(--surface-1)]">— Select Type (Required) —</option>
             <option value="IDI" className="bg-[var(--surface-1)]">IDI</option>
             <option value="FGD" className="bg-[var(--surface-1)]">FGD</option>
           </select>
         </div>
+        <Button onClick={triggerFileUpload} loading={uploading} size="sm">
+          <Upload size={13} /> Upload Files
+        </Button>
         <Button variant="outline" size="sm" onClick={load}>
           <RefreshCw size={13} /> Refresh
         </Button>
@@ -185,9 +200,16 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
       {/* Drop zone overlay */}
       <div
         className="border-2 border-dashed border-[var(--border)] rounded-lg mb-4 p-4 text-center text-xs text-[var(--text-faint)] hover:border-amber-500/30 hover:text-[var(--text-dim)] transition-colors cursor-pointer"
-        onClick={() => inputRef.current?.click()}
+        onClick={triggerFileUpload}
         onDragOver={e => { e.preventDefault(); }}
-        onDrop={e => { e.preventDefault(); handleUpload(e.dataTransfer.files); }}
+        onDrop={e => {
+          e.preventDefault();
+          if (!uploadDocType) {
+            showToast('Document Type (IDI or FGD) is required before uploading files.', 'error');
+            return;
+          }
+          handleUpload(e.dataTransfer.files);
+        }}
       >
         Drop files here or click to upload · Only PDF, DOCX, and DOC files supported
       </div>

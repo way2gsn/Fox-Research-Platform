@@ -17,9 +17,9 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
   const [uploadModal, setUploadModal] = useState(false);
   const [parsedRows, setParsedRows] = useState<any[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
-  const [headerCol, setHeaderCol] = useState('');
   const [conceptCol, setConceptCol] = useState('');
-  const [subheaderCol, setSubheaderCol] = useState('');
+  const [headerCol, setHeaderCol] = useState('');
+  const [questionCol, setQuestionCol] = useState('');
   const [sourceFileName, setSourceFileName] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -66,9 +66,9 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
       }).filter((r: any) => Object.values(r).some(v => String(v).trim() !== ''));
       setParsedRows(rows);
       // Auto-detect common column names
-      setHeaderCol(headers.find(h => /header|question|query/i.test(h)) || headers[0]);
       setConceptCol(headers.find(h => /concept|theme|category/i.test(h)) || '');
-      setSubheaderCol(headers.find(h => /sub.?header|sub.?question/i.test(h)) || '');
+      setHeaderCol(headers.find(h => /^header$/i.test(h)) || headers.find(h => /header/i.test(h)) || '');
+      setQuestionCol(headers.find(h => /question|query/i.test(h)) || headers[0] || '');
       setUploadModal(true);
     };
     reader.readAsText(file);
@@ -76,14 +76,15 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
 
   async function handleUpload() {
     if (!headerCol) { showToast('Header column is required', 'error'); return; }
+    if (!questionCol) { showToast('Question column is required', 'error'); return; }
     setUploading(true);
     try {
       await api.agent.querySpec.upload(projectId, {
         source_file_name: sourceFileName,
         column_mapping: {
-          header: headerCol,
           concept: conceptCol || null,
-          subheader: subheaderCol || null,
+          header: headerCol,
+          question: questionCol,
         },
         rows: parsedRows,
       });
@@ -246,9 +247,9 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
           {/* Column mapping selects */}
           <div className="grid grid-cols-3 gap-3">
             {[
+              { label: 'Concept Column (Optional)', value: conceptCol, setter: setConceptCol, required: false },
               { label: 'Header Column *', value: headerCol, setter: setHeaderCol, required: true },
-              { label: 'Concept Column', value: conceptCol, setter: setConceptCol, required: false },
-              { label: 'Subheader Column', value: subheaderCol, setter: setSubheaderCol, required: false },
+              { label: 'Question Column *', value: questionCol, setter: setQuestionCol, required: true },
             ].map(({ label, value, setter, required }) => (
               <div key={label} className="flex flex-col gap-1.5">
                 <label className="text-[11px] uppercase tracking-wider text-[var(--text-dim)] font-medium">
@@ -283,6 +284,8 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
                             ? 'text-amber-400'
                             : c === conceptCol
                             ? 'text-purple-400'
+                            : c === questionCol
+                            ? 'text-emerald-400'
                             : 'text-[var(--text-faint)]'
                         )}
                       >
@@ -308,7 +311,7 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
 
           <div className="flex gap-2 justify-end pt-1">
             <Button variant="ghost" onClick={() => setUploadModal(false)}>Cancel</Button>
-            <Button onClick={handleUpload} loading={uploading} disabled={!headerCol}>
+            <Button onClick={handleUpload} loading={uploading} disabled={!headerCol || !questionCol}>
               <Upload size={13} /> Upload Spec
             </Button>
           </div>
