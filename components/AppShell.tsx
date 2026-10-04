@@ -94,10 +94,7 @@ export function AppShell({ children, breadcrumbs }: {
             <Menu size={20} />
           </button>
           <div className="flex items-center gap-4 border-r-0 sm:border-r border-[var(--border)] pr-3 sm:pr-5">
-            {/* Dark Mode Logo (White SVG) */}
-            <img src="https://researchfox.com/wp-content/uploads/2021/12/footer-logo.svg" alt="ResearchFox" className="h-4 opacity-90 hidden dark:block" />
-            {/* Light Mode Logo (Colored) */}
-            <img src="https://researchfox.com/wp-content/uploads/2024/11/logo_researchfox.png" alt="ResearchFox" className="h-4 dark:hidden" />
+            <img src="https://researchfox.com/wp-content/uploads/2021/12/footer-logo.svg" alt="ResearchFox" className="h-4 opacity-90" />
           </div>
           
           {breadcrumbs?.map((b, i) => (

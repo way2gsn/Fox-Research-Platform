@@ -48,8 +48,7 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md p-8 bg-[var(--surface-1)] border border-[var(--border)] rounded-2xl shadow-2xl relative z-10 fade-up">
         <div className="flex flex-col items-center mb-8">
-          <img src="https://researchfox.com/wp-content/uploads/2021/12/footer-logo.svg" alt="ResearchFox" className="h-10 opacity-90 hidden dark:block mb-2" />
-          <img src="https://researchfox.com/wp-content/uploads/2024/11/logo_researchfox.png" alt="ResearchFox" className="h-10 dark:hidden mb-2" />
+          <img src="https://researchfox.com/wp-content/uploads/2021/12/footer-logo.svg" alt="ResearchFox" className="h-10 opacity-90 mb-2" />
           <h1 className="sr-only">ResearchFox</h1>
           <p className="text-[var(--text-dim)] text-sm">
             AI Intelligence Platform
