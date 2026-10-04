@@ -159,6 +159,21 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
   async function handleSpecUpload() {
     if (!headerCol) { showToast('Header column is required', 'error'); return; }
     if (!questionCol) { showToast('Question column is required', 'error'); return; }
+
+    const emptyHeaderRows: number[] = [];
+    parsedRows.forEach((row, index) => {
+      const val = String(row[headerCol] || '').trim();
+      if (!val) emptyHeaderRows.push(index + 1);
+    });
+
+    if (emptyHeaderRows.length > 0) {
+      const rowList = emptyHeaderRows.length <= 5
+        ? `row(s) ${emptyHeaderRows.join(', ')}`
+        : `${emptyHeaderRows.length} rows (e.g. row ${emptyHeaderRows.slice(0, 5).join(', ')}...)`;
+      showToast(`Header column cannot be blank. Found empty headers in ${rowList}. Please fill all empty headers in your execution sheet before uploading.`, 'error');
+      return;
+    }
+
     setUploadingSpec(true);
     try {
       await api.agent.querySpec.upload(projectId, {
@@ -787,11 +802,17 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
 
             <div className="space-y-2">
               <label className="text-xs font-semibold text-[var(--text)]">Header *</label>
-              <select value={headerCol} onChange={e => setHeaderCol(e.target.value)} className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500">
+              <select value={headerCol} onChange={e => setHeaderCol(e.target.value)} className={clsx("w-full bg-[var(--surface-1)] border rounded p-2 text-sm text-[var(--text)] outline-none focus:border-amber-500", headerCol && parsedRows.some(r => !String(r[headerCol] || '').trim()) ? "border-red-500/80" : "border-[var(--border)]")}>
                 <option value="">-- Select Column --</option>
                 {columns.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              <p className="text-[11px] text-[var(--text-faint)]">Used for section grouping</p>
+              {headerCol && parsedRows.some(r => !String(r[headerCol] || '').trim()) ? (
+                <p className="text-[11px] text-red-400 font-medium">
+                  ⚠️ Header contains empty cells in {parsedRows.filter(r => !String(r[headerCol] || '').trim()).length} row(s). Please fill all empty headers.
+                </p>
+              ) : (
+                <p className="text-[11px] text-[var(--text-faint)]">Used for section grouping</p>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -834,7 +855,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
 
           <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
             <Button variant="ghost" onClick={() => setUploadModal(false)}>Cancel</Button>
-            <Button variant="primary" onClick={handleSpecUpload} loading={uploadingSpec} disabled={!headerCol || !questionCol}>
+            <Button variant="primary" onClick={handleSpecUpload} loading={uploadingSpec} disabled={!headerCol || !questionCol || (!!headerCol && parsedRows.some(r => !String(r[headerCol] || '').trim()))}>
               Upload Spec <Upload size={14} className="ml-2" />
             </Button>
           </div>

@@ -77,6 +77,21 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
   async function handleUpload() {
     if (!headerCol) { showToast('Header column is required', 'error'); return; }
     if (!questionCol) { showToast('Question column is required', 'error'); return; }
+
+    const emptyHeaderRows: number[] = [];
+    parsedRows.forEach((row, index) => {
+      const val = String(row[headerCol] || '').trim();
+      if (!val) emptyHeaderRows.push(index + 1);
+    });
+
+    if (emptyHeaderRows.length > 0) {
+      const rowList = emptyHeaderRows.length <= 5
+        ? `row(s) ${emptyHeaderRows.join(', ')}`
+        : `${emptyHeaderRows.length} rows (e.g. row ${emptyHeaderRows.slice(0, 5).join(', ')}...)`;
+      showToast(`Header column cannot be blank. Found empty headers in ${rowList}. Please fill all empty headers in your execution sheet before uploading.`, 'error');
+      return;
+    }
+
     setUploading(true);
     try {
       await api.agent.querySpec.upload(projectId, {
@@ -311,7 +326,7 @@ export function QuerySpecPanel({ projectId }: { projectId: number }) {
 
           <div className="flex gap-2 justify-end pt-1">
             <Button variant="ghost" onClick={() => setUploadModal(false)}>Cancel</Button>
-            <Button onClick={handleUpload} loading={uploading} disabled={!headerCol || !questionCol}>
+            <Button onClick={handleUpload} loading={uploading} disabled={!headerCol || !questionCol || (!!headerCol && parsedRows.some(r => !String(r[headerCol] || '').trim()))}>
               <Upload size={13} /> Upload Spec
             </Button>
           </div>
