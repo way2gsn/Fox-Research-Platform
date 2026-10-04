@@ -328,8 +328,8 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
               onChange={e => setLlmModel(e.target.value)}
               className="bg-transparent border border-[var(--border)] text-[var(--text-dim)] rounded-md px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-500/60 hover:border-[var(--border-bright)] transition-all cursor-pointer h-[30px]"
             >
-              <option value="gpt-4o-mini" className="bg-[var(--surface-1)] text-[var(--text)]">GPT-4o Mini (Cost Efficient)</option>
-              <option value="gpt-4o" className="bg-[var(--surface-1)] text-[var(--text)]">GPT-4o (Maximum Accuracy)</option>
+              <option value="gpt-4o-mini" className="bg-[var(--surface-1)] text-[var(--text)]">gpt-4o-mini</option>
+              <option value="gpt-6-luna" className="bg-[var(--surface-1)] text-[var(--text)]">gpt-6-luna</option>
             </select>
           </div>
 

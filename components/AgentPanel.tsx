@@ -643,8 +643,8 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                           onChange={e => setLlmModel(e.target.value)}
                           className="w-full bg-[var(--surface-1)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-amber-500/60"
                         >
-                          <option value="gpt-4o-mini">Balanced — gpt-4o-mini (Recommended)</option>
-                          <option value="gpt-4o">High Quality — gpt-4o</option>
+                          <option value="gpt-4o-mini">gpt-4o-mini</option>
+                          <option value="gpt-6-luna">gpt-6-luna</option>
                         </select>
                       </div>
                     </div>
