@@ -69,13 +69,13 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
     }
     setUploading(true);
     const arr = Array.from(files);
-    const allowedExtensions = ['.pdf', '.docx', '.doc'];
+    const allowedExtensions = ['.pdf', '.docx', '.doc', '.xlsx', '.csv'];
     let successCount = 0;
 
     for (const file of arr) {
       const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
       if (!allowedExtensions.includes(ext)) {
-        showToast(`${file.name}: Invalid file type. Only PDF, DOCX, and DOC files are allowed.`, 'error');
+        showToast(`${file.name}: Invalid file type. Only PDF, DOCX, DOC, XLSX, and CSV files are allowed.`, 'error');
         continue;
       }
 
@@ -160,7 +160,7 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
         <input
           ref={inputRef}
           type="file"
-          accept=".pdf,.docx,.doc"
+          accept=".pdf,.docx,.doc,.xlsx,.csv"
           multiple
           className="hidden"
           onChange={e => handleUpload(e.target.files)}
@@ -211,7 +211,7 @@ export function DocumentsPanel({ projectId }: { projectId: number }) {
           handleUpload(e.dataTransfer.files);
         }}
       >
-        Drop files here or click to upload · Only PDF, DOCX, and DOC files supported
+        Drop files here or click to upload · Supported files: PDF, DOCX, DOC, XLSX, CSV
       </div>
 
       {/* Document list */}
