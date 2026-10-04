@@ -29,7 +29,7 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [maxVerbatims, setMaxVerbatims] = useState('5');
   const [retrievalMode, setRetrievalMode] = useState('global');
-  const [llmModel, setLlmModel] = useState('gpt-4o-mini');
+  const [llmModel, setLlmModel] = useState('gpt-6-luna');
 
   // Query Specs State
   const [specs, setSpecs] = useState<QuerySpec[]>([]);
@@ -645,8 +645,8 @@ export function AgentPanel({ projectId, documents }: { projectId: number; docume
                           onChange={e => setLlmModel(e.target.value)}
                           className="w-full bg-[var(--surface-1)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-amber-500/60"
                         >
+                          <option value="gpt-6-luna">gpt-6-luna (Recommended)</option>
                           <option value="gpt-4o-mini">gpt-4o-mini</option>
-                          <option value="gpt-6-luna">gpt-6-luna</option>
                         </select>
                       </div>
                     </div>

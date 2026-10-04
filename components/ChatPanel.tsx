@@ -33,7 +33,7 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [searchType] = useState<SearchType>('behavioural');
-  const [llmModel, setLlmModel] = useState<string>('gpt-4o-mini');
+  const [llmModel, setLlmModel] = useState<string>('gpt-6-luna');
   const [selectedDocId, setSelectedDocId] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [showSources, setShowSources] = useState<string | null>(null);
@@ -328,8 +328,8 @@ export function ChatPanel({ projectId, documents, isExpanded, onExpand }: { proj
               onChange={e => setLlmModel(e.target.value)}
               className="bg-transparent border border-[var(--border)] text-[var(--text-dim)] rounded-md px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-500/60 hover:border-[var(--border-bright)] transition-all cursor-pointer h-[30px]"
             >
+              <option value="gpt-6-luna" className="bg-[var(--surface-1)] text-[var(--text)]">gpt-6-luna (Recommended)</option>
               <option value="gpt-4o-mini" className="bg-[var(--surface-1)] text-[var(--text)]">gpt-4o-mini</option>
-              <option value="gpt-6-luna" className="bg-[var(--surface-1)] text-[var(--text)]">gpt-6-luna</option>
             </select>
           </div>
 
